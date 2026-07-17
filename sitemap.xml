@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://djsluxx.github.io/escape-in-an-envelope/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/dino-6-8.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/space-5-6.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/spy-7-9.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/pirate-6-8.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/unicorn-5-7.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/superhero-6-9.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/princess-4-6.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/mermaid-5-7.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/jungle-safari-6-8.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/ninja-7-9.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/halloween-6-9.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/christmas-5-8.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://djsluxx.github.io/escape-in-an-envelope/kits/easter-4-7.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>
