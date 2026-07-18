@@ -1,0 +1,34 @@
+{
+  "title": "🔓 The Secret Snack Vault — Your Free 3-Clue Mini Escape Room (Ages 5–8)",
+  "story_intro": "Read this aloud to get the kids buzzing before they start:\n\n\"Attention, Agents! 🕵️ We have a situation. The snacks have been locked inside the Secret Snack Vault, and the ONLY way to open it is a top-secret 3-number code. Nobody knows the code by heart… but three Clue Cards are hidden right here in this room. Your mission: find all three cards, solve the puzzle on each one, and each card will reveal ONE secret number. Line the three numbers up, crack the code, and the Vault — and everything tasty inside it — is YOURS. This mission is 100% possible. You've got sharp eyes and clever brains. Ready? Your mission starts in three… two… one… GO! ⏱️\"",
+  "host_setup": "⏱️ 5-minute setup — the whole thing prints on plain paper and needs almost nothing.\n\nYOU NEED: the printed pages, scissors, sticky tape, a pen or crayon, one box/tin/shoebox, and a handful of treats.\n\n1) PRINT the pages: the three Clue Cards, the Symbol Key, the Vault Keypad + secret answer strip, and the Junior Escape Artist certificate. Plain black-and-white is totally fine.\n\n2) FILL THE VAULT: pop the treats inside any box, tin or shoebox. Tape it shut. Tape the printed Vault Keypad onto the lid. (Own a little 3-digit combination padlock? Even better — set it to 426 and lock the box for a real click-open moment.)\n\n3) HIDE the three Clue Cards around the room somewhere little ones can actually reach — under a cushion, on the fridge, peeking out from behind a curtain. Pop the Symbol Key next to Clue 3 (or leave it out in plain sight).\n\n4) YOU are the Vault Keeper 🗝️. Slip the secret answer strip (the code is 426) into your pocket so you can check their final answer.\n\n5) Gather the kids, read the story above, and let the hunt begin! Play time is about 10–15 minutes.\n\n⭐ Want it to feel like a proper treasure trail? Tape each clue in the spot the previous one hints at, so solving one leads to the next. That chained clue-trail is exactly what the full illustrated themed kits do for you — six hand-drawn puzzles, zone signs and a keypad finale, with zero drawing and zero planning on your part.",
+  "puzzles": [
+    {
+      "n": 1,
+      "name": "⭐ Clue 1 — Count the Stars",
+      "instructions": "This card shows a busy night sky crammed with shapes — twinkly stars, curvy moons and little clouds all jumbled together. The mission: count ONLY the gold stars, and ignore every moon and cloud (they're there to trick you!). Top tip for younger agents: touch each star and circle it with your pen as you count, so none get counted twice and none get missed. The total number of stars is the FIRST number of the vault code — write it in the star box at the bottom of the card so you don't forget it.",
+      "materials": "Just the printed Clue 1 card and a pen or crayon.",
+      "answer": "There are exactly 4 gold stars hidden among the moons and clouds. First digit = 4.",
+      "yields_digit": "4"
+    },
+    {
+      "n": 2,
+      "name": "👣 Clue 2 — Follow the Footprints",
+      "instructions": "This card has a doorway on the left and three treasure chests down the right-hand side, with muddy footprints winding all over the page. Here's the catch: only ONE unbroken trail of footprints actually reaches a chest — the other trails wander off into dead ends. Start at the doorway and trace the real, connected trail with your finger or pen, footprint by footprint. When you reach the chest at the end of the true trail, read the big number painted on it — that's the SECOND number of the vault code. (The dead-end chests have decoy numbers on them, so follow the footsteps carefully and don't get tricked!)",
+      "materials": "Just the printed Clue 2 card and a finger or pen to trace the trail.",
+      "answer": "The one unbroken footprint trail leads from the door to the chest marked 2. The two dead-end chests show decoy numbers 7 and 9. Second digit = 2.",
+      "yields_digit": "2"
+    },
+    {
+      "n": 3,
+      "name": "🔑 Clue 3 — Crack the Symbol Code",
+      "instructions": "This is the real code-breaker! The card shows a locked luggage tag with a single mystery symbol on it: a ♥ heart. To turn that symbol into a number, grab the Symbol Key card, where every shape has its own secret number: ⭐ = 1, ● = 2, ▲ = 3, ■ = 4, ♦ = 5, ♥ = 6. Find the matching symbol on the key, and the number beside it is the THIRD and final number of the vault code. ✨ Level-up for ages 7–8: the harder version of this card shows TWO symbols side by side — decode each one using the key, then ADD them together to get your final digit.",
+      "materials": "The printed Clue 3 card AND the Symbol Key card.",
+      "answer": "The tag shows a ♥ heart; the Symbol Key says ♥ = 6. Third digit = 6. (Level-up version shows ▲ + ▲ = 3 + 3 = 6, giving the same answer.)",
+      "yields_digit": "6"
+    }
+  ],
+  "final_code": "426",
+  "final_instruction": "🔓 TIME TO OPEN THE VAULT! Now line the three secret numbers up in order — Clue 1 first, then Clue 2, then Clue 3 — to reveal the full code: 4 – 2 – 6. Have the agents write 4, then 2, then 6 into the three boxes on the Vault Keypad taped to the box (or spin a combination padlock round to 426). Then it's countdown time — everyone together: \"THREE… TWO… ONE… OPEN THE VAULT!\" The Vault Keeper checks the code against the secret answer strip and — CLICK! — cuts the tape and lifts the lid. Snacks unlocked, mission complete, agents victorious! 🎉 And if a number comes out wrong, no drama: the Vault simply stays shut, and you send the agents back to double-check that one clue — a brilliant, low-stress \"try again\" that keeps everyone in the game.",
+  "certificate_line": "🏅 This certifies that ________________________ used super-sharp eyes, clever code-cracking brainpower and true detective courage to break into the Secret Snack Vault — and is hereby awarded the rank of OFFICIAL JUNIOR ESCAPE ARTIST! Signed, The Vault Keeper 🗝️"
+}
