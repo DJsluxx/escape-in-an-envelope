@@ -127,6 +127,7 @@ def page(slug, k):
     ld = {
       "@context":"https://schema.org","@type":"Product",
       "name":f"{title} — Printable Kids Escape Room (Ages {ages})",
+      "image":f"{BASE}/pins/{slug}-pin.png",
       "description":desc,"brand":{"@type":"Brand","name":"Escape in an Envelope"},
       "category":"Toys & Games > Games > Party Games",
       "audience":{"@type":"PeopleAudience","suggestedMinAge":ages.split("-")[0],"suggestedMaxAge":ages.split("-")[1]},
@@ -142,6 +143,8 @@ def page(slug, k):
 <meta name="theme-color" content="#3d3a5c">
 <meta property="og:type" content="product"><meta property="og:title" content="{esc(title)} — Printable Kids Escape Room">
 <meta property="og:description" content="{esc(hook)}"><meta property="og:url" content="{BASE}/kits/{slug}.html">
+<meta property="og:image" content="{BASE}/pins/{slug}-pin.png">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{BASE}/pins/{slug}-pin.png">
 <script type="application/ld+json">{json.dumps(ld)}</script>
 <style>{CSS}</style></head><body>
 <div class="top"><div class="wrap"><a class="brand" href="../index.html">🔐✉️ Escape in an Envelope</a><span class="crumb">Kids Escape Rooms › {esc(title.split(':')[0])}</span></div></div>
