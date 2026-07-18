@@ -92,6 +92,7 @@ header{text-align:center;padding:40px 20px 8px}
 h1{font-size:clamp(26px,5vw,40px);color:var(--primary);margin:10px 0 6px;font-weight:800}
 .meta{font-weight:700;color:var(--accent);letter-spacing:.5px}
 .hook{font-size:clamp(17px,2.6vw,21px);margin:16px auto 0;max-width:620px;opacity:.9}
+.pin-img{max-width:270px;width:100%;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.15);margin:20px auto 4px;display:block}
 .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:26px 0 10px}
 .btn{display:inline-block;padding:14px 30px;border-radius:999px;font-weight:800;font-size:17px;text-decoration:none;box-shadow:0 4px 0 rgba(0,0,0,.12)}
 .btn.etsy{background:var(--etsy);color:#fff}.btn.gum{background:var(--primary);color:#fff}
@@ -153,6 +154,7 @@ def page(slug, k):
 <h1>{esc(title)}</h1>
 <p class="meta">Printable · Ages {ages} · {players} players · {mins} min</p>
 <p class="hook">{esc(hook)}</p>
+<img class="pin-img" src="{BASE}/pins/{slug}-pin.png" alt="{esc(title)} printable kids escape room" width="270" loading="lazy" />
 <div class="cta">{buy_gum}<a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
 <p class="price">Instant PDF download · nothing ships · prints on any home printer · reusable</p>
 {season_line}
