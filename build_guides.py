@@ -31,20 +31,40 @@ FREE_SLUG = "free-printable-escape-room-for-kids"
 
 def esc(s): return html.escape(str(s))
 
-# Compact kit map for funnel links (slug -> emoji, short title, gumroad slug, ages, price)
+UTM_SOURCE = "eie-site"
+
+
+def utm(url, medium, campaign):
+    """Tag an outbound Gumroad href with UTM params so Gumroad's sales referrer
+    data shows which page converted (source fixed; medium = page type
+    guide|kit|index; campaign = page slug). Non-Gumroad URLs pass through."""
+    if not url or not url.startswith(GUM):
+        return url
+    sep = "&" if "?" in url else "?"
+    return f"{url}{sep}utm_source={UTM_SOURCE}&utm_medium={medium}&utm_campaign={campaign}"
+
+
+# Compact kit map for funnel links
+# (slug -> emoji, short title, gumroad slug, ages, price, etsy listing url)
 # gumroad slug None = no direct Gumroad link known; funnel must override cta_href.
+# etsy url None = kit not (verifiably) listed on Etsy; CTAs fall back to the shop root.
 KITS = {
- "dino-6-8": ("🦖", "Dino Escape", "pyqyvv", "6-8", "9"),
- "space-5-6": ("🚀", "Space Station Escape", "jkemsb", "5-6", "9"),
- "spy-7-9": ("🕵️", "Spy HQ Lockdown", "wypktg", "7-9", "10"),
- "pirate-6-8": ("🏴‍☠️", "Pirate Treasure Escape", "egugwl", "6-8", "9"),
- "unicorn-5-7": ("🦄", "Rainbow Kingdom Escape", "gwycbb", "5-7", "9"),
- "superhero-6-9": ("🦸", "Superhero Academy Escape", "cgoaw", "6-9", "9"),
- "princess-4-6": ("👑", "Royal Castle Escape", "zsfgkd", "4-6", "9"),
- "mermaid-5-7": ("🧜‍♀️", "Mermaid Lagoon Escape", "tajaxj", "5-7", "9"),
- "jungle-safari-6-8": ("🦁", "Jungle Safari Rescue", "ylftn", "6-8", "9"),
- "ninja-7-9": ("🥷", "Ninja Dojo Escape", "btdxt", "7-9", "10"),
- "halloween-6-9": ("🎃", "Monster Mansion Escape", None, "6-9", "9"),
+ "dino-6-8": ("🦖", "Dino Escape", "pyqyvv", "6-8", "9",
+   "https://www.etsy.com/listing/4539492669/dinosaur-escape-room-printable-game-ages"),
+ "space-5-6": ("🚀", "Space Station Escape", "jkemsb", "5-6", "9",
+   "https://www.etsy.com/listing/4539496989/space-station-escape-room-game-astronaut"),
+ "spy-7-9": ("🕵️", "Spy HQ Lockdown", "wypktg", "7-9", "10",
+   "https://www.etsy.com/listing/4539506947/spy-escape-room-kids-printable-secret"),
+ "pirate-6-8": ("🏴‍☠️", "Pirate Treasure Escape", "egugwl", "6-8", "9",
+   "https://www.etsy.com/listing/4539508791/pirate-escape-room-kids-printable"),
+ "unicorn-5-7": ("🦄", "Rainbow Kingdom Escape", "gwycbb", "5-7", "9",
+   "https://www.etsy.com/listing/4539597713/unicorn-escape-room-kids-printable"),
+ "superhero-6-9": ("🦸", "Superhero Academy Escape", "cgoaw", "6-9", "9", None),
+ "princess-4-6": ("👑", "Royal Castle Escape", "zsfgkd", "4-6", "9", None),
+ "mermaid-5-7": ("🧜‍♀️", "Mermaid Lagoon Escape", "tajaxj", "5-7", "9", None),
+ "jungle-safari-6-8": ("🦁", "Jungle Safari Rescue", "ylftn", "6-8", "9", None),
+ "ninja-7-9": ("🥷", "Ninja Dojo Escape", "btdxt", "7-9", "10", None),
+ "halloween-6-9": ("🎃", "Monster Mansion Escape", None, "6-9", "9", None),
 }
 
 DEFAULT_THEME = {
@@ -127,16 +147,18 @@ def render_faq(faq):
 def funnel_block(art):
     funnel_kit = art.get("kit")
     over = art.get("funnel") or {}
+    campaign = art["slug"]
     if funnel_kit and funnel_kit in KITS:
-        emoji, title, gslug, ages, price = KITS[funnel_kit]
+        emoji, title, gslug, ages, price, etsy_url = KITS[funnel_kit]
         emoji = over.get("emoji", emoji)
         h3_title = over.get("title", title)
         cta_href = over.get("cta_href", f"{GUM}/l/{gslug}" if gslug else None)
         if not cta_href:
             raise SystemExit(f"ABORT: kit {funnel_kit} has no gumroad slug and no funnel cta_href override")
+        cta_href = utm(cta_href, "guide", campaign)
         cta_label = over.get("cta_label", f"Get {title} — ${price} →")
         rel = ' rel="noopener"' if cta_href.startswith("http") else ""
-        etsy_btn = f'<a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a>' if over.get("etsy_button", True) else ""
+        etsy_btn = f'<a class="btn etsy" href="{etsy_url or ETSY}" rel="noopener">Shop on Etsy →</a>' if over.get("etsy_button", True) else ""
         price_extra = f'{esc(over["price_extra"])} · ' if over.get("price_extra") else ""
         return f"""<div class="funnel"><div class="e">{emoji}</div>
 <h3>The done-for-you version: {esc(h3_title)}</h3>
@@ -147,7 +169,7 @@ def funnel_block(art):
     return f"""<div class="funnel"><div class="e">🔐✉️</div>
 <h3>Want it done for you? Grab a themed kit</h3>
 <p>{esc(art["funnel_pitch"])}</p>
-<div class="cta"><a class="btn gum" href="{GUM}" rel="noopener">Browse all kits on Gumroad →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
+<div class="cta"><a class="btn gum" href="{utm(GUM, "guide", campaign)}" rel="noopener">Browse all kits on Gumroad →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
 <p class="price">13 themes · ages 4–9 · instant PDF · ~$9 each · <a href="../index.html">see all kits →</a></p></div>"""
 
 
@@ -253,7 +275,7 @@ def guide_page(art, articles, pz=None):
 <div class="wrap">
 {body_html}
 </div>
-<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="index.html">Party guides</a> · <a href="{ETSY}">Etsy</a> · <a href="{GUM}">Gumroad</a></footer>
+<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="index.html">Party guides</a> · <a href="{ETSY}">Etsy</a> · <a href="{utm(GUM, "guide", slug)}">Gumroad</a></footer>
 </body></html>"""
 
 
@@ -279,9 +301,9 @@ def guides_index(articles):
 <div class="guidenav" style="margin-top:22px">{cards}</div></header>
 <div class="wrap"><section style="padding-top:26px"><h2>Ready-made escape room kits</h2>
 <p class="hook" style="margin:0 0 14px">Love the ideas but short on time? Every themed kit is an instant-download, print-at-home escape room — zero prep.</p>
-<div class="cta"><a class="btn gum" href="{GUM}" rel="noopener">Browse kits on Gumroad →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
+<div class="cta"><a class="btn gum" href="{utm(GUM, "index", "guides-index")}" rel="noopener">Browse kits on Gumroad →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
 <p style="text-align:center;margin-top:16px"><a href="../index.html">← See all 13 kits</a></p></section></div>
-<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="{ETSY}">Etsy</a> · <a href="{GUM}">Gumroad</a></footer>
+<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="{ETSY}">Etsy</a> · <a href="{utm(GUM, "index", "guides-index")}">Gumroad</a></footer>
 </body></html>"""
 
 

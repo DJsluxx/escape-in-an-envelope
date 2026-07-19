@@ -14,6 +14,9 @@ from __future__ import annotations
 import html, json
 from pathlib import Path
 
+import build_guides
+from build_guides import utm
+
 ROOT = Path(__file__).resolve().parent
 BASE = "https://djsluxx.github.io/escape-in-an-envelope"
 ETSY = "https://escapeinanenvelop.etsy.com"
@@ -21,60 +24,66 @@ GUM = "https://salama62.gumroad.com"
 
 def esc(s): return html.escape(str(s))
 
-# slug: (emoji, display title, ages, players, minutes, price, hook, [6 puzzles], certificate, gumroad_slug, season)
+# slug: (emoji, display title, ages, players, minutes, price, hook, [6 puzzles], certificate, gumroad_slug, season, etsy_url)
+# etsy_url None = kit not (verifiably) listed on Etsy; CTAs fall back to the shop root.
 KITS = {
  "dino-6-8": ("🦖","Dino Escape: Operation Rexy","6-8","3-8","30-45","9",
    "Baby T-Rex Rexy is about to break out of the lab — crack the cage code and stop the escape!",
    ["Count the fossils","Sort the dino food","Cross the lava maze","Reveal a hidden colour","Crack the ranger code","Spot the differences"],
-   "Junior Dino Ranger","pyqyvv",None),
+   "Junior Dino Ranger","pyqyvv",None,
+   "https://www.etsy.com/listing/4539492669/dinosaur-escape-room-printable-game-ages"),
  "space-5-6": ("🚀","Space Station Escape","5-6","3-8","25-40","9",
    "The space station is offline and a meteor shower is coming — get the lights back on!",
    ["Count the stars","Sort the space gear","Steer past the asteroids","Reveal a hidden colour","Crack the star code","Spot the differences"],
-   "Junior Astronaut","jkemsb",None),
+   "Junior Astronaut","jkemsb",None,
+   "https://www.etsy.com/listing/4539496989/space-station-escape-room-game-astronaut"),
  "spy-7-9": ("🕵️","Spy HQ Lockdown","7-9","3-8","35-50","10",
    "The thief Shadow has locked down HQ and hidden the Golden Chip — agents, recover it!",
    ["Key-card count","Real-vs-fake sort","The laser hall","Colour-reveal","The spy cipher","Spot the differences"],
-   "Secret Agent","wypktg",None),
+   "Secret Agent","wypktg",None,
+   "https://www.etsy.com/listing/4539506947/spy-escape-room-kids-printable-secret"),
  "pirate-6-8": ("🏴‍☠️","Pirate Treasure Escape","6-8","3-8","30-45","9",
    "Sneaky Captain Sea-Rat locked away the treasure — young pirates, open the chest!",
    ["Count the gold","Sort treasure from trash","Dodge the sharks","Reveal a hidden number","Crack the pirate code","Spot the differences"],
-   "Junior Pirate","egugwl",None),
+   "Junior Pirate","egugwl",None,
+   "https://www.etsy.com/listing/4539508791/pirate-escape-room-kids-printable"),
  "unicorn-5-7": ("🦄","Rainbow Kingdom Escape","5-7","3-8","25-40","9",
    "The kingdom's magic sparkle is fading and everything's turning grey — bring the rainbow back!",
    ["Count the gems","Sort magic from ordinary","Cross the storm clouds","Reveal a hidden colour","Crack the rainbow code","Spot the differences"],
-   "Junior Unicorn Ranger","gwycbb",None),
+   "Junior Unicorn Ranger","gwycbb",None,
+   "https://www.etsy.com/listing/4539597713/unicorn-escape-room-kids-printable"),
  "superhero-6-9": ("🦸","Superhero Academy Escape","6-9","3-8","30-45","9",
    "The villain Mister Muddle scrambled the whole city — young heroes, switch it back to normal!",
    ["Count the power gems","Spot the real gadgets","Dodge the chaos bolts","Reveal a hidden colour","Crack the hero code","Spot the differences"],
-   "Junior Superhero","cgoaw",None),
+   "Junior Superhero","cgoaw",None,None),
  "princess-4-6": ("👑","Royal Castle Escape","4-6","3-8","20-35","9",
    "The sparkly crown jewels have vanished — little royals, find them before the ball!",
    ["Count the jewels","Sort what belongs to a royal","Skip past the dragon","Reveal a hidden colour","Crack the royal code","Spot the differences"],
-   "Junior Royal","zsfgkd",None),
+   "Junior Royal","zsfgkd",None,None),
  "mermaid-5-7": ("🧜‍♀️","Mermaid Lagoon Escape","5-7","3-8","25-40","9",
    "The Mermaid Queen has lost her magic pearl — swim through the reef and find it before the tide turns!",
    ["Count the pearls","Sort treasure from trash","Swim past the sharks","Reveal a hidden colour","Crack the shell code","Spot the differences"],
-   "Junior Mermaid","tajaxj",None),
+   "Junior Mermaid","tajaxj",None,None),
  "jungle-safari-6-8": ("🐒","Jungle Safari Rescue Escape","6-8","3-8","30-45","9",
    "Baby monkey Mango wandered off — safari explorers, bring him home before nightfall!",
    ["Count the bird eggs","Pack the rescue gear","Cross the vine bridge","Reveal a hidden colour","Crack the jungle code","Spot the differences"],
-   "Junior Safari Explorer","ylftn",None),
+   "Junior Safari Explorer","ylftn",None,None),
  "ninja-7-9": ("🥷","Ninja Dojo Escape","7-9","3-8","30-45","10",
    "A masked thief stole the sacred scroll from the dojo — ninja trainees, recover it!",
    ["Count the shuriken","Spot the real ninja gear","Slip past the traps","Reveal a secret ink message","Crack the shadow code","Spot the differences"],
-   "Junior Shinobi","btdxt",None),
+   "Junior Shinobi","btdxt",None,None),
  "halloween-6-9": ("🎃","Monster Mansion Escape","6-9","3-8","30-45","9",
    "Count Snackula has hidden all the Halloween candy — monster hunters, rescue the treats!",
    ["Count the candy","Sort treats from tricks","Escape the ghosts","Reveal a hidden colour","Crack the monster code","Spot the differences"],
-   "Junior Monster Hunter",None,"Halloween"),
+   "Junior Monster Hunter",None,"Halloween",None),
  "christmas-5-8": ("🎄","Santa's Workshop Escape","5-8","3-8","30-45","9",
    "The sleigh code is scrambled and Santa can't take off — little elves, get Christmas back on track!",
    ["Count the presents","Sort naughty from nice","Cross the icy path","Reveal a hidden colour","Crack the elf code","Spot the differences"],
-   "Junior Elf",None,"Christmas"),
+   "Junior Elf",None,"Christmas",None),
  "easter-4-7": ("🐰","Easter Bunny's Egg Hunt Escape","4-7","3-8","20-35","9",
    "Hopscotch the Easter Bunny hid the golden egg — egg hunters, find it before the picnic!",
    ["Count the pink eggs","Sort yummy from yucky","Hop past the puddles","Reveal a hidden colour","Crack the bunny code","Spot the differences"],
-   "Junior Egg Hunter",None,"Easter"),
+   "Junior Egg Hunter",None,"Easter",None),
 }
 
 CSS = """
@@ -115,10 +124,11 @@ footer{text-align:center;padding:30px 20px;opacity:.7;font-size:14px}
 """
 
 def page(slug, k):
-    emoji,title,ages,players,mins,price,hook,puzzles,cert,gslug,season = k
+    emoji,title,ages,players,mins,price,hook,puzzles,cert,gslug,season,etsy_url = k
     seo_title = f"{title} — Printable Escape Room for Kids Ages {ages} | Escape in an Envelope"
     desc = f"{title}: a print-at-home escape room for kids ages {ages}. Six puzzles, zero prep, instant PDF download. {hook}"
-    gum_url = f"{GUM}/l/{gslug}" if gslug else GUM
+    gum_url = utm(f"{GUM}/l/{gslug}" if gslug else GUM, "kit", slug)
+    etsy_href = etsy_url or ETSY
     buy_gum = f'<a class="btn gum" href="{gum_url}" rel="noopener">Buy on Gumroad — ${price} →</a>' if gslug else ""
     season_line = f'<p class="price">⏰ Seasonal — a {season} favourite. Grab it a few weeks ahead.</p>' if season else ""
     trail = "".join(f"<li>{esc(p)}</li>" for p in puzzles)
@@ -155,7 +165,7 @@ def page(slug, k):
 <p class="meta">Printable · Ages {ages} · {players} players · {mins} min</p>
 <p class="hook">{esc(hook)}</p>
 <img class="pin-img" src="{BASE}/pins/{slug}-pin.png" alt="{esc(title)} printable kids escape room" width="270" loading="lazy" />
-<div class="cta">{buy_gum}<a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
+<div class="cta">{buy_gum}<a class="btn etsy" href="{etsy_href}" rel="noopener">Shop on Etsy →</a></div>
 <p class="price">Instant PDF download · nothing ships · prints on any home printer · reusable</p>
 {season_line}
 </header>
@@ -172,7 +182,7 @@ def page(slug, k):
 <div class="step"><div class="e">🛒</div><b>1. Buy &amp; download</b>Instant PDF — nothing ships.</div>
 <div class="step"><div class="e">🖨️</div><b>2. Print &amp; hide</b>Print the cards, tape up the signs.</div>
 <div class="step"><div class="e">🔎</div><b>3. Play</b>Kids solve the trail and crack the code!</div></div>
-<div class="cta" style="margin-top:22px">{buy_gum}<a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div></section>
+<div class="cta" style="margin-top:22px">{buy_gum}<a class="btn etsy" href="{etsy_href}" rel="noopener">Shop on Etsy →</a></div></section>
 <section><h2>Questions</h2>
 <details open><summary>What do I get?</summary><p>An instant PDF: 6 clue cards, 7 zone signs, a code card and finale keypad, {esc(cert)} certificates, and a full host guide with the answer key. Nothing is shipped — you print at home.</p></details>
 <details><summary>Do I need anything special?</summary><p>Just a home printer (colour recommended) and some tape. No app, no props, no batteries, zero prep.</p></details>
@@ -181,22 +191,18 @@ def page(slug, k):
 <section><h2>More kids escape rooms</h2><div class="more">{others}</div>
 <p style="text-align:center;margin-top:18px"><a href="../index.html">← See all 13 kits</a></p></section>
 </div>
-<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="{ETSY}">Etsy</a> · <a href="{GUM}">Gumroad</a></footer>
+<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="{ETSY}">Etsy</a> · <a href="{utm(GUM, "kit", slug)}">Gumroad</a></footer>
 </body></html>"""
 
 def main():
     kdir = ROOT / "kits"; kdir.mkdir(exist_ok=True)
     for slug,k in KITS.items():
         (kdir / f"{slug}.html").write_text(page(slug,k), encoding="utf-8")
-    # sitemap
-    urls = [f"{BASE}/"] + [f"{BASE}/kits/{s}.html" for s in KITS]
-    sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    for u in urls:
-        pr = "1.0" if u.endswith("/") else "0.8"
-        sm += f"  <url><loc>{u}</loc><changefreq>weekly</changefreq><priority>{pr}</priority></url>\n"
-    sm += "</urlset>\n"
-    (ROOT / "sitemap.xml").write_text(sm, encoding="utf-8")
-    print(f"Built {len(KITS)} kit pages + sitemap ({len(urls)} urls).")
+    # sitemap — delegate to build_guides.build_sitemap so the superset guard runs
+    # (a kit-only sitemap here used to silently drop every /guides/ URL).
+    guide_order = [a["slug"] for a in build_guides.load_articles()]
+    n = build_guides.build_sitemap(ROOT, guide_order)
+    print(f"Built {len(KITS)} kit pages + sitemap ({n} urls).")
 
 if __name__ == "__main__":
     main()

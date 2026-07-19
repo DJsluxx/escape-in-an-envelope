@@ -96,6 +96,64 @@ def test_superset_guard_aborts_on_dropped_url(tmp_path: Path) -> None:
     assert sm.read_text(encoding="utf-8") == before  # guard left the sitemap untouched
 
 
+GUM_HREF_RE = re.compile(r'href="(https://salama62\.gumroad\.com[^"]*)"')
+
+
+def gumroad_hrefs(text: str) -> list[str]:
+    return GUM_HREF_RE.findall(text)
+
+
+def test_every_gumroad_href_is_utm_tagged(built_site: Path) -> None:
+    """No Gumroad link (product /l/ or shop root) may leave the site untagged."""
+    for page in (built_site / "guides").glob("*.html"):
+        hrefs = gumroad_hrefs(page.read_text(encoding="utf-8"))
+        assert hrefs, f"{page.name} has no Gumroad links at all"
+        for h in hrefs:
+            assert "utm_source=eie-site" in h and "utm_medium=" in h \
+                and "utm_campaign=" in h, f"{page.name}: untagged Gumroad href {h}"
+
+
+def test_no_bare_gumroad_product_links(built_site: Path) -> None:
+    for page in (built_site / "guides").glob("*.html"):
+        for h in gumroad_hrefs(page.read_text(encoding="utf-8")):
+            if "/l/" in h:
+                assert "?utm_" in h or "&utm_" in h, f"{page.name}: bare product link {h}"
+
+
+def test_guide_utm_medium_and_campaign(built_site: Path) -> None:
+    """Guide pages tag medium=guide + campaign=<own slug>; hub tags medium=index."""
+    articles = build_guides.load_articles()
+    kit_guides = [a for a in articles if a.get("kit") in build_guides.KITS]
+    assert kit_guides, "no guide funnels to a known kit?"
+    for art in kit_guides[:3]:
+        text = (built_site / "guides" / f"{art['slug']}.html").read_text(encoding="utf-8")
+        assert f"utm_medium=guide&utm_campaign={art['slug']}" in text, art["slug"]
+    hub = (built_site / "guides" / "index.html").read_text(encoding="utf-8")
+    for h in gumroad_hrefs(hub):
+        assert "utm_medium=index&utm_campaign=guides-index" in h, f"hub: {h}"
+
+
+def test_kit_page_gumroad_utm_and_etsy_deep_link() -> None:
+    """build_kit_pages: /l/ hrefs tagged medium=kit + campaign=<kit slug>;
+    Etsy CTA deep-links to the listing when known, shop root otherwise."""
+    import build_kit_pages
+
+    with_listing = "dino-6-8"       # verified live Etsy listing
+    without_listing = "ninja-7-9"   # no Etsy listing -> shop-root fallback
+
+    text = build_kit_pages.page(with_listing, build_kit_pages.KITS[with_listing])
+    hrefs = gumroad_hrefs(text)
+    assert any("/l/" in h for h in hrefs), "kit page lost its buy link"
+    for h in hrefs:
+        assert "utm_source=eie-site" in h and "utm_medium=kit" in h \
+            and f"utm_campaign={with_listing}" in h, h
+    assert 'class="btn etsy" href="https://www.etsy.com/listing/4539492669/' in text
+    assert f'class="btn etsy" href="{build_kit_pages.ETSY}"' not in text
+
+    text2 = build_kit_pages.page(without_listing, build_kit_pages.KITS[without_listing])
+    assert f'class="btn etsy" href="{build_kit_pages.ETSY}"' in text2
+
+
 def test_build_writes_only_guides_and_sitemap(built_site: Path) -> None:
     """The builder must never create verification/key files."""
     top_level = {p.name for p in built_site.iterdir()}
