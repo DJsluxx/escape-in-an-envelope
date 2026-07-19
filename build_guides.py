@@ -4,16 +4,22 @@
 Each guide at /guides/<slug>.html is a genuinely useful, long-form party article that
 targets a high-volume long-tail query ("dinosaur birthday party games", "free printable
 escape room for kids", ...) and funnels to the matching paid kit + the Etsy/Gumroad shops.
-Content comes from guides_content.json (drafted + editor-reviewed upstream); the free-printable
-guide additionally embeds the free mini-escape-room from free_puzzle.json and offers the PDF.
 
-Also builds /guides/index.html (the hub) and rebuilds sitemap.xml to include homepage +
-all kit pages + all guide pages + the guides hub + the free printable PDF.
+guides_content.json is the single source of truth: article order, per-guide metadata
+(nav label, funnel kit, og image) and optional per-guide overrides (theme colors,
+breadcrumb, image alt, JSON-LD description, kit chips, funnel tweaks) all live there.
+The free-printable guide additionally embeds the free mini-escape-room from
+free_puzzle.json and offers the PDF.
+
+Also builds /guides/index.html (the hub) and rebuilds sitemap.xml by enumerating the
+actual guides/*.html + kits/*.html files on disk. Before overwriting sitemap.xml the
+script parses the existing one and aborts loudly if any currently-listed URL would
+disappear (superset guard), so a bad build can never de-index live pages.
 
     python build_guides.py
 """
 from __future__ import annotations
-import html, json
+import html, json, re, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -21,10 +27,12 @@ BASE = "https://djsluxx.github.io/escape-in-an-envelope"
 ETSY = "https://escapeinanenvelop.etsy.com"
 GUM = "https://salama62.gumroad.com"
 FREE_PDF = f"{BASE}/free/mini-escape-room.pdf"
+FREE_SLUG = "free-printable-escape-room-for-kids"
 
 def esc(s): return html.escape(str(s))
 
 # Compact kit map for funnel links (slug -> emoji, short title, gumroad slug, ages, price)
+# gumroad slug None = no direct Gumroad link known; funnel must override cta_href.
 KITS = {
  "dino-6-8": ("🦖", "Dino Escape", "pyqyvv", "6-8", "9"),
  "space-5-6": ("🚀", "Space Station Escape", "jkemsb", "5-6", "9"),
@@ -34,33 +42,17 @@ KITS = {
  "superhero-6-9": ("🦸", "Superhero Academy Escape", "cgoaw", "6-9", "9"),
  "princess-4-6": ("👑", "Royal Castle Escape", "zsfgkd", "4-6", "9"),
  "mermaid-5-7": ("🧜‍♀️", "Mermaid Lagoon Escape", "tajaxj", "5-7", "9"),
- "jungle-safari-6-8": ("🐒", "Jungle Safari Rescue", "ylftn", "6-8", "9"),
+ "jungle-safari-6-8": ("🦁", "Jungle Safari Rescue", "ylftn", "6-8", "9"),
  "ninja-7-9": ("🥷", "Ninja Dojo Escape", "btdxt", "7-9", "10"),
+ "halloween-6-9": ("🎃", "Monster Mansion Escape", None, "6-9", "9"),
 }
 
-# guide slug -> (funnel kit slug or None for "all", og-image url)
-GUIDE_META = {
- "free-printable-escape-room-for-kids": (None, f"{BASE}/pins/free-printable-pin.png"),
- "dinosaur-birthday-party-games": ("dino-6-8", f"{BASE}/pins/dino-6-8-pin.png"),
- "unicorn-party-ideas-for-kids": ("unicorn-5-7", f"{BASE}/pins/unicorn-5-7-pin.png"),
- "space-party-games-for-kids": ("space-5-6", f"{BASE}/pins/space-5-6-pin.png"),
- "pirate-party-games-for-kids": ("pirate-6-8", f"{BASE}/pins/pirate-6-8-pin.png"),
- "superhero-party-ideas-for-kids": ("superhero-6-9", f"{BASE}/pins/superhero-6-9-pin.png"),
- "kids-escape-room-party-guide": (None, f"{BASE}/pins/ultimate-guide-pin.png"),
-}
-GUIDE_ORDER = list(GUIDE_META.keys())
-GUIDE_NAV = {
- "free-printable-escape-room-for-kids": "🗝️ Free Printable Escape Room",
- "dinosaur-birthday-party-games": "🦖 Dinosaur Party Games",
- "unicorn-party-ideas-for-kids": "🦄 Unicorn Party Ideas",
- "space-party-games-for-kids": "🚀 Space Party Games",
- "pirate-party-games-for-kids": "🏴‍☠️ Pirate Party Games",
- "superhero-party-ideas-for-kids": "🦸 Superhero Party Ideas",
- "kids-escape-room-party-guide": "🔐 Kids Escape Room (How-To)",
+DEFAULT_THEME = {
+ "primary": "#3d3a5c", "accent": "#c9a227", "ink": "#2b2740",
+ "paper": "#faf7f0", "band": "#e7e0cf",
 }
 
-CSS = """
-:root{--primary:#3d3a5c;--accent:#c9a227;--ink:#2b2740;--paper:#faf7f0;--band:#e7e0cf;--etsy:#f56400}
+CSS_BODY = """
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Segoe UI","Trebuchet MS",system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.65}
 a{color:var(--primary)}
@@ -103,6 +95,13 @@ footer{text-align:center;padding:30px 20px;opacity:.7;font-size:14px;border-top:
 DOMAIN_VERIFY = '<meta name="p:domain_verify" content="acbbe5c41ba31559d65bd39fffa9f24c">'
 
 
+def css_for(theme_overrides=None):
+    t = {**DEFAULT_THEME, **(theme_overrides or {})}
+    root = (f':root{{--primary:{t["primary"]};--accent:{t["accent"]};--ink:{t["ink"]};'
+            f'--paper:{t["paper"]};--band:{t["band"]};--etsy:#f56400}}')
+    return "\n" + root + CSS_BODY
+
+
 def render_sections(sections):
     out = []
     for s in sections:
@@ -125,18 +124,29 @@ def render_faq(faq):
     return f'<h2>Common questions</h2>{items}'
 
 
-def funnel_block(funnel_kit, funnel_pitch):
+def funnel_block(art):
+    funnel_kit = art.get("kit")
+    over = art.get("funnel") or {}
     if funnel_kit and funnel_kit in KITS:
         emoji, title, gslug, ages, price = KITS[funnel_kit]
+        emoji = over.get("emoji", emoji)
+        h3_title = over.get("title", title)
+        cta_href = over.get("cta_href", f"{GUM}/l/{gslug}" if gslug else None)
+        if not cta_href:
+            raise SystemExit(f"ABORT: kit {funnel_kit} has no gumroad slug and no funnel cta_href override")
+        cta_label = over.get("cta_label", f"Get {title} — ${price} →")
+        rel = ' rel="noopener"' if cta_href.startswith("http") else ""
+        etsy_btn = f'<a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a>' if over.get("etsy_button", True) else ""
+        price_extra = f'{esc(over["price_extra"])} · ' if over.get("price_extra") else ""
         return f"""<div class="funnel"><div class="e">{emoji}</div>
-<h3>The done-for-you version: {esc(title)}</h3>
-<p>{esc(funnel_pitch)}</p>
-<div class="cta"><a class="btn gum" href="{GUM}/l/{gslug}" rel="noopener">Get {esc(title)} — ${price} →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
-<p class="price">Instant PDF · print at home · nothing ships · reusable · <a href="../kits/{funnel_kit}.html">see everything inside →</a></p></div>"""
+<h3>The done-for-you version: {esc(h3_title)}</h3>
+<p>{esc(art["funnel_pitch"])}</p>
+<div class="cta"><a class="btn gum" href="{cta_href}"{rel}>{esc(cta_label)}</a>{etsy_btn}</div>
+<p class="price">Instant PDF · print at home · nothing ships · reusable · {price_extra}<a href="../kits/{funnel_kit}.html">see everything inside →</a></p></div>"""
     # generic funnel (pillar pages)
     return f"""<div class="funnel"><div class="e">🔐✉️</div>
 <h3>Want it done for you? Grab a themed kit</h3>
-<p>{esc(funnel_pitch)}</p>
+<p>{esc(art["funnel_pitch"])}</p>
 <div class="cta"><a class="btn gum" href="{GUM}" rel="noopener">Browse all kits on Gumroad →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
 <p class="price">13 themes · ages 4–9 · instant PDF · ~$9 each · <a href="../index.html">see all kits →</a></p></div>"""
 
@@ -169,15 +179,18 @@ def render_free_puzzle_html(pz):
     return "\n".join(parts)
 
 
-def guide_page(art, pz=None):
+def guide_page(art, articles, pz=None):
     slug = art["slug"]
-    funnel_kit, og_img = GUIDE_META[slug]
-    is_free = slug == "free-printable-escape-room-for-kids"
+    og_img = art["og_image"]
+    is_free = slug == FREE_SLUG
+    nav_by_slug = {a["slug"]: a["nav_label"] for a in articles}
     other_guides = "".join(
-        f'<a class="chip" href="{s}.html">{GUIDE_NAV[s]}</a>' for s in GUIDE_ORDER if s != slug
+        f'<a class="chip" href="{a["slug"]}.html">{nav_by_slug[a["slug"]]}</a>'
+        for a in articles if a["slug"] != slug
     )
+    kit_chip_slugs = art.get("kit_chips") or list(KITS)[:6]
     kit_chips = "".join(
-        f'<a class="chip" href="../kits/{s}.html">{KITS[s][0]} {esc(KITS[s][1])}</a>' for s in list(KITS)[:6]
+        f'<a class="chip" href="../kits/{s}.html">{KITS[s][0]} {esc(KITS[s][1])}</a>' for s in kit_chip_slugs
     )
 
     body = []
@@ -187,13 +200,14 @@ def guide_page(art, pz=None):
     if is_free and pz:
         body.append(render_free_puzzle_html(pz))
     body.append("</div>")
-    body.append(funnel_block(funnel_kit, art["funnel_pitch"]))
+    body.append(funnel_block(art))
     body.append(render_faq(art["faq"]))
     body.append(f'<section style="padding-top:24px"><h2>More free party guides</h2><div class="more">{other_guides}</div></section>')
     body.append(f'<section style="padding-top:6px"><h2>Popular printable escape rooms</h2><div class="more">{kit_chips}</div>'
                 f'<p style="text-align:center;margin-top:16px"><a href="../index.html">← See all 13 kits</a></p></section>')
     body_html = "\n".join(body)
 
+    ld_description = art.get("ld_description", art["meta_description"])
     faq_ld = {
         "@context": "https://schema.org", "@type": "FAQPage",
         "mainEntity": [
@@ -203,12 +217,17 @@ def guide_page(art, pz=None):
     }
     article_ld = {
         "@context": "https://schema.org", "@type": "Article",
-        "headline": art["h1"], "description": art["meta_description"],
+        "headline": art["h1"], "description": ld_description,
         "image": og_img, "author": {"@type": "Organization", "name": "Escape in an Envelope"},
         "publisher": {"@type": "Organization", "name": "Escape in an Envelope"},
         "mainEntityOfPage": f"{BASE}/guides/{slug}.html",
     }
     kw = ", ".join(art["keywords"])
+    ld_ascii = art.get("ld_ensure_ascii", True)
+    theme = art.get("theme")
+    theme_color = art.get("theme_color", (theme or DEFAULT_THEME).get("primary", DEFAULT_THEME["primary"]))
+    crumb = art.get("crumb", art["h1"][:40])
+    img_alt = art.get("img_alt", art["h1"])
     return f"""<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 {DOMAIN_VERIFY}
@@ -216,20 +235,20 @@ def guide_page(art, pz=None):
 <meta name="description" content="{esc(art["meta_description"])}">
 <meta name="keywords" content="{esc(kw)}">
 <link rel="canonical" href="{BASE}/guides/{slug}.html">
-<meta name="theme-color" content="#3d3a5c">
+<meta name="theme-color" content="{theme_color}">
 <meta property="og:type" content="article"><meta property="og:title" content="{esc(art["h1"])}">
 <meta property="og:description" content="{esc(art["meta_description"])}"><meta property="og:url" content="{BASE}/guides/{slug}.html">
 <meta property="og:image" content="{og_img}">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{og_img}">
-<script type="application/ld+json">{json.dumps(article_ld)}</script>
-<script type="application/ld+json">{json.dumps(faq_ld)}</script>
-<style>{CSS}</style></head><body>
-<div class="top"><div class="wrap"><a class="brand" href="../index.html">🔐✉️ Escape in an Envelope</a><span class="crumb">Party Guides › {esc(art["h1"][:40])}</span></div></div>
+<script type="application/ld+json">{json.dumps(article_ld, ensure_ascii=ld_ascii)}</script>
+<script type="application/ld+json">{json.dumps(faq_ld, ensure_ascii=ld_ascii)}</script>
+<style>{css_for(theme)}</style></head><body>
+<div class="top"><div class="wrap"><a class="brand" href="../index.html">🔐✉️ Escape in an Envelope</a><span class="crumb">Party Guides › {esc(crumb)}</span></div></div>
 <header class="hero">
 <div class="emoji">{esc(art["emoji"])}</div>
 <h1>{esc(art["h1"])}</h1>
 <p class="hook">{esc(art["hook"])}</p>
-<img class="hero-img" src="{og_img}" alt="{esc(art["h1"])}" width="300" loading="lazy" />
+<img class="hero-img" src="{og_img}" alt="{esc(img_alt)}" width="300" loading="lazy" />
 </header>
 <div class="wrap">
 {body_html}
@@ -240,19 +259,19 @@ def guide_page(art, pz=None):
 
 def guides_index(articles):
     cards = "".join(
-        f'<a class="chip" href="{a["slug"]}.html" style="padding:14px 18px;font-size:15px">{GUIDE_NAV[a["slug"]]}</a>'
+        f'<a class="chip" href="{a["slug"]}.html" style="padding:14px 18px;font-size:15px">{a["nav_label"]}</a>'
         for a in articles
     )
     return f"""<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 {DOMAIN_VERIFY}
 <title>Free Kids Party Games &amp; Escape Room Guides | Escape in an Envelope</title>
-<meta name="description" content="Free, practical party guides: dinosaur, unicorn, space, pirate &amp; superhero party games, plus how to make a kids escape room at home — with a free printable.">
+<meta name="description" content="Free, practical party guides: dinosaur, unicorn, space, pirate, superhero, spy, princess, mermaid, jungle safari &amp; ninja party games, plus how to make a kids escape room at home — with a free printable.">
 <link rel="canonical" href="{BASE}/guides/index.html">
 <meta name="theme-color" content="#3d3a5c">
 <meta property="og:title" content="Free Kids Party Games &amp; Escape Room Guides">
 <meta property="og:image" content="{BASE}/pins/free-printable-pin.png">
-<style>{CSS}</style></head><body>
+<style>{css_for()}</style></head><body>
 <div class="top"><div class="wrap"><a class="brand" href="../index.html">🔐✉️ Escape in an Envelope</a><span class="crumb">Party Guides</span></div></div>
 <header class="hero"><div class="emoji">🎉</div>
 <h1>Free kids party guides</h1>
@@ -266,37 +285,77 @@ def guides_index(articles):
 </body></html>"""
 
 
-def build_sitemap(guide_slugs):
-    kit_slugs = ["dino-6-8","space-5-6","spy-7-9","pirate-6-8","unicorn-5-7","superhero-6-9",
-                 "princess-4-6","mermaid-5-7","jungle-safari-6-8","ninja-7-9",
-                 "halloween-6-9","christmas-5-8","easter-4-7"]
+def _ordered_slugs(found, preferred):
+    """Preferred order first (only those that exist), then any extras sorted."""
+    found = list(found)
+    ordered = [s for s in preferred if s in found]
+    ordered += sorted(s for s in found if s not in preferred)
+    return ordered
+
+
+def existing_sitemap_urls(site_root):
+    sm_path = site_root / "sitemap.xml"
+    if not sm_path.exists():
+        return set()
+    return set(re.findall(r"<loc>(.*?)</loc>", sm_path.read_text(encoding="utf-8")))
+
+
+def build_sitemap(site_root, guide_order):
+    """Rebuild sitemap.xml from the actual guides/*.html and kits/*.html on disk.
+
+    Superset guard: refuses to write a sitemap that drops any URL present in the
+    existing sitemap.xml (protects live, indexed pages from silent de-listing).
+    """
+    guide_files = sorted((site_root / "guides").glob("*.html"))
+    guide_slugs = [p.stem for p in guide_files if p.name != "index.html"]
+    kit_dir = site_root / "kits"
+    kit_slugs = [p.stem for p in sorted(kit_dir.glob("*.html"))] if kit_dir.exists() else []
+
     urls = [(f"{BASE}/", "1.0")]
     urls += [(f"{BASE}/guides/index.html", "0.9")]
-    urls += [(f"{BASE}/guides/{s}.html", "0.9") for s in guide_slugs]
-    urls += [(f"{BASE}/kits/{s}.html", "0.8") for s in kit_slugs]
+    urls += [(f"{BASE}/guides/{s}.html", "0.9") for s in _ordered_slugs(guide_slugs, guide_order)]
+    urls += [(f"{BASE}/kits/{s}.html", "0.8") for s in _ordered_slugs(kit_slugs, list(KITS))]
+
+    new_set = {u for u, _ in urls}
+    missing = existing_sitemap_urls(site_root) - new_set
+    if missing:
+        raise SystemExit(
+            "ABORT: rebuilding sitemap.xml would DROP these currently-listed URLs:\n  "
+            + "\n  ".join(sorted(missing))
+            + "\nNo files were written for the sitemap. Fix guides_content.json / the on-disk pages first."
+        )
+
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for u, pr in urls:
         sm += f"  <url><loc>{u}</loc><changefreq>weekly</changefreq><priority>{pr}</priority></url>\n"
     sm += "</urlset>\n"
-    (ROOT / "sitemap.xml").write_text(sm, encoding="utf-8")
+    (site_root / "sitemap.xml").write_text(sm, encoding="utf-8")
     return len(urls)
 
 
-def main():
+def load_articles():
     content = json.loads((ROOT / "guides_content.json").read_text(encoding="utf-8"))
-    articles = content["articles"] if isinstance(content, dict) else content
+    return content["articles"] if isinstance(content, dict) else content
+
+
+def build_site(out_root=None):
+    out_root = Path(out_root) if out_root else ROOT
+    articles = load_articles()
     pz_path = ROOT / "free_puzzle.json"
     pz = json.loads(pz_path.read_text(encoding="utf-8")) if pz_path.exists() else None
 
-    gdir = ROOT / "guides"; gdir.mkdir(exist_ok=True)
-    # keep canonical order
-    by_slug = {a["slug"]: a for a in articles}
-    ordered = [by_slug[s] for s in GUIDE_ORDER if s in by_slug]
-    for a in ordered:
-        (gdir / f"{a['slug']}.html").write_text(guide_page(a, pz), encoding="utf-8")
-    (gdir / "index.html").write_text(guides_index(ordered), encoding="utf-8")
-    n = build_sitemap([a["slug"] for a in ordered])
-    print(f"Built {len(ordered)} guide pages + guides/index.html + sitemap ({n} urls).")
+    gdir = out_root / "guides"
+    gdir.mkdir(parents=True, exist_ok=True)
+    for a in articles:
+        (gdir / f"{a['slug']}.html").write_text(guide_page(a, articles, pz), encoding="utf-8")
+    (gdir / "index.html").write_text(guides_index(articles), encoding="utf-8")
+    n = build_sitemap(out_root, [a["slug"] for a in articles])
+    print(f"Built {len(articles)} guide pages + guides/index.html + sitemap ({n} urls).")
+    return len(articles), n
+
+
+def main():
+    build_site(ROOT)
 
 
 if __name__ == "__main__":
