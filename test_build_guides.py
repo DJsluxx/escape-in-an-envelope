@@ -18,7 +18,7 @@ import pytest
 import build_guides
 
 REPO = Path(__file__).resolve().parent
-EXPECTED_GUIDES = 13  # article pages; +1 for guides/index.html
+EXPECTED_GUIDES = 15  # article pages; +1 for guides/index.html
 
 
 def sitemap_urls(path: Path) -> set[str]:
@@ -60,7 +60,7 @@ def test_guide_pages_not_empty(built_site: Path) -> None:
 
 def test_sitemap_has_enough_urls(built_site: Path) -> None:
     urls = sitemap_urls(built_site / "sitemap.xml")
-    assert len(urls) >= 27, f"sitemap only has {len(urls)} urls"
+    assert len(urls) >= 29, f"sitemap only has {len(urls)} urls"
 
 
 def test_sitemap_superset_of_live(built_site: Path) -> None:

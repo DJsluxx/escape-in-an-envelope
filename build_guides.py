@@ -65,6 +65,8 @@ KITS = {
  "jungle-safari-6-8": ("🦁", "Jungle Safari Rescue", "ylftn", "6-8", "9", None),
  "ninja-7-9": ("🥷", "Ninja Dojo Escape", "btdxt", "7-9", "10", None),
  "halloween-6-9": ("🎃", "Monster Mansion Escape", None, "6-9", "9", None),
+ "christmas-5-8": ("🎄", "Santa's Workshop Escape", None, "5-8", "9", None),
+ "easter-4-7": ("🐰", "Easter Bunny's Egg Hunt Escape", None, "4-7", "9", None),
 }
 
 DEFAULT_THEME = {
