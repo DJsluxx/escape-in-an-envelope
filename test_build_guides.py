@@ -18,7 +18,10 @@ import pytest
 import build_guides
 
 REPO = Path(__file__).resolve().parent
-EXPECTED_GUIDES = 15  # article pages; +1 for guides/index.html
+# Derived from the single source of truth so it never goes stale when a guide is
+# added/removed. (Was a hard-coded literal that silently broke the suite on every
+# new guide.) +1 for guides/index.html in the page-count assertions.
+EXPECTED_GUIDES = len(build_guides.load_articles())
 
 
 def sitemap_urls(path: Path) -> set[str]:
