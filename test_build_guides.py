@@ -157,6 +157,63 @@ def test_kit_page_gumroad_utm_and_etsy_deep_link() -> None:
     assert f'class="btn etsy" href="{build_kit_pages.ETSY}"' in text2
 
 
+def _ld_blocks(text: str) -> list[dict]:
+    import json
+    out = []
+    for m in re.findall(
+        r'<script type="application/ld\+json">(.*?)</script>', text, re.DOTALL
+    ):
+        try:
+            out.append(json.loads(m))
+        except json.JSONDecodeError:
+            pass
+    return out
+
+
+def test_every_guide_has_breadcrumb_ld(built_site: Path) -> None:
+    """AEO: every guide page carries a 3-level BreadcrumbList (Home > Party
+    Guides > guide) so search + AI answer engines can place a cited page."""
+    for page in (built_site / "guides").glob("*.html"):
+        if page.name == "index.html":
+            continue
+        crumbs = [b for b in _ld_blocks(page.read_text(encoding="utf-8"))
+                  if b.get("@type") == "BreadcrumbList"]
+        assert crumbs, f"{page.name} missing BreadcrumbList JSON-LD"
+        items = crumbs[0]["itemListElement"]
+        assert [i["name"] for i in items][:2] == ["Home", "Party Guides"], page.name
+        assert len(items) == 3, f"{page.name} breadcrumb not 3 levels"
+
+
+def test_ordered_guides_emit_howto_ld(built_site: Path) -> None:
+    """AEO: a guide with a genuine ordered run-of-show/timeline section emits a
+    HowTo whose steps mirror those bullets (truthful, auto-derived)."""
+    articles = build_guides.load_articles()
+    checked = 0
+    for art in articles:
+        ordered = next(
+            (s for s in art["sections"] if s.get("ordered") and s.get("bullets")), None
+        )
+        if not ordered or len(ordered["bullets"]) < 3 or art.get("no_howto"):
+            continue
+        text = (built_site / "guides" / f"{art['slug']}.html").read_text(encoding="utf-8")
+        howtos = [b for b in _ld_blocks(text) if b.get("@type") == "HowTo"]
+        assert howtos, f"{art['slug']} should emit HowTo JSON-LD"
+        assert len(howtos[0]["step"]) == len(ordered["bullets"]), art["slug"]
+        checked += 1
+    assert checked >= 10, f"expected many how-to guides, only checked {checked}"
+
+
+def test_answer_first_lead_rendered(built_site: Path) -> None:
+    """AEO: guides that declare an `answer` render it as a visible answer-first
+    lead paragraph at the top of the article."""
+    articles = build_guides.load_articles()
+    with_answer = [a for a in articles if a.get("answer")]
+    assert len(with_answer) >= 10, "answer-first leads not authored"
+    for art in with_answer:
+        text = (built_site / "guides" / f"{art['slug']}.html").read_text(encoding="utf-8")
+        assert '<p class="answer">' in text, f"{art['slug']} missing answer lead"
+
+
 def test_build_writes_only_guides_and_sitemap(built_site: Path) -> None:
     """The builder must never create verification/key files."""
     top_level = {p.name for p in built_site.iterdir()}

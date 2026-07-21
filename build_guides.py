@@ -92,6 +92,7 @@ h1{font-size:clamp(25px,4.6vw,38px);color:var(--primary);margin:10px auto 8px;fo
 .article{padding:8px 0 10px}
 .article h2{color:var(--primary);font-size:23px;margin:30px 0 12px}
 .article p{margin:0 0 14px}
+.article .answer{font-size:18px;font-weight:600;line-height:1.55;background:#fff;border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin:2px 0 22px}
 .article ul,.article ol{margin:0 0 16px 4px;padding-left:22px}
 .article li{margin:6px 0}
 .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:22px 0 8px}
@@ -204,6 +205,57 @@ def render_free_puzzle_html(pz):
     return "\n".join(parts)
 
 
+_LEAD_EMOJI_RE = re.compile(r"^[^\w\"'(]+")
+
+
+def _strip_lead_emoji(s):
+    """Drop a leading emoji/symbol prefix from a heading so it reads cleanly as a
+    schema.org name (e.g. '🦖 Dinosaur Birthday Party Games' -> 'Dinosaur ...')."""
+    return _LEAD_EMOJI_RE.sub("", str(s)).strip()
+
+
+def breadcrumb_ld(art):
+    """BreadcrumbList JSON-LD for Home › Party Guides › this guide. Emitted on
+    every guide so search + AI answer engines understand the site hierarchy and
+    can render breadcrumb context around a cited page."""
+    slug = art["slug"]
+    name = art.get("nav_label") or art.get("crumb") or _strip_lead_emoji(art["h1"])
+    return {
+        "@context": "https://schema.org", "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{BASE}/"},
+            {"@type": "ListItem", "position": 2, "name": "Party Guides",
+             "item": f"{BASE}/guides/index.html"},
+            {"@type": "ListItem", "position": 3, "name": name,
+             "item": f"{BASE}/guides/{slug}.html"},
+        ],
+    }
+
+
+def howto_ld(art):
+    """HowTo JSON-LD derived from the guide's first ordered run-of-show / timeline
+    section — those bullets literally ARE sequential steps, so the structured data
+    stays truthful with zero hand-authoring. Guides with no ordered section (pure
+    listicles) or an explicit ``no_howto`` flag emit nothing."""
+    if art.get("no_howto"):
+        return None
+    ordered = next(
+        (s for s in art["sections"] if s.get("ordered") and s.get("bullets")), None
+    )
+    if not ordered:
+        return None
+    steps = [{"@type": "HowToStep", "text": b} for b in ordered["bullets"]]
+    if len(steps) < 3:
+        return None
+    return {
+        "@context": "https://schema.org", "@type": "HowTo",
+        "name": _strip_lead_emoji(art["h1"]),
+        "description": art.get("ld_description", art["meta_description"]),
+        "image": art["og_image"],
+        "step": steps,
+    }
+
+
 def guide_page(art, articles, pz=None):
     slug = art["slug"]
     og_img = art["og_image"]
@@ -221,7 +273,11 @@ def guide_page(art, articles, pz=None):
     body = []
     if is_free:
         body.append(free_download_block())
-    body.append(f'<div class="article">{render_sections(art["sections"])}')
+    # Answer-first lead: a short, direct answer to the guide's core query rendered
+    # at the very top of the article, so AI answer engines (and skimming parents)
+    # can extract/quote the answer without wading through the essay opening.
+    answer_html = f'<p class="answer">{esc(art["answer"])}</p>' if art.get("answer") else ""
+    body.append(f'<div class="article">{answer_html}{render_sections(art["sections"])}')
     if is_free and pz:
         body.append(render_free_puzzle_html(pz))
     body.append("</div>")
@@ -249,6 +305,16 @@ def guide_page(art, articles, pz=None):
     }
     kw = ", ".join(art["keywords"])
     ld_ascii = art.get("ld_ensure_ascii", True)
+    # AEO structured data: breadcrumb on every guide; HowTo where the guide has a
+    # genuine ordered run-of-show. Built here so a single json.dumps loop emits all.
+    extra_ld = [breadcrumb_ld(art)]
+    ht = howto_ld(art)
+    if ht:
+        extra_ld.append(ht)
+    extra_ld_html = "\n".join(
+        f'<script type="application/ld+json">{json.dumps(x, ensure_ascii=ld_ascii)}</script>'
+        for x in extra_ld
+    )
     theme = art.get("theme")
     theme_color = art.get("theme_color", (theme or DEFAULT_THEME).get("primary", DEFAULT_THEME["primary"]))
     crumb = art.get("crumb", art["h1"][:40])
@@ -267,6 +333,7 @@ def guide_page(art, articles, pz=None):
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{og_img}">
 <script type="application/ld+json">{json.dumps(article_ld, ensure_ascii=ld_ascii)}</script>
 <script type="application/ld+json">{json.dumps(faq_ld, ensure_ascii=ld_ascii)}</script>
+{extra_ld_html}
 <style>{css_for(theme)}</style></head><body>
 <div class="top"><div class="wrap"><a class="brand" href="../index.html">🔐✉️ Escape in an Envelope</a><span class="crumb">Party Guides › {esc(crumb)}</span></div></div>
 <header class="hero">
