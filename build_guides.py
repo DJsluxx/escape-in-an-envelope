@@ -20,6 +20,7 @@ disappear (superset guard), so a bad build can never de-index live pages.
 """
 from __future__ import annotations
 import html, json, re, sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -324,8 +325,23 @@ def existing_sitemap_urls(site_root):
     return set(re.findall(r"<loc>(.*?)</loc>", sm_path.read_text(encoding="utf-8")))
 
 
+def _lastmod(path: Path) -> str | None:
+    """W3C-date (YYYY-MM-DD) of a file's last modification, or None if absent.
+
+    Google uses <lastmod> as a crawl-scheduling / freshness signal; deriving it
+    from the actual file mtime keeps it honest and automatic (no hand-stamped
+    dates that rot). A missing file simply omits the tag rather than lying."""
+    try:
+        return datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).strftime("%Y-%m-%d")
+    except OSError:
+        return None
+
+
 def build_sitemap(site_root, guide_order):
     """Rebuild sitemap.xml from the actual guides/*.html and kits/*.html on disk.
+
+    Each URL carries a <lastmod> derived from its file's mtime (crawl-priority
+    signal for search + AI answer engines).
 
     Superset guard: refuses to write a sitemap that drops any URL present in the
     existing sitemap.xml (protects live, indexed pages from silent de-listing).
@@ -335,12 +351,15 @@ def build_sitemap(site_root, guide_order):
     kit_dir = site_root / "kits"
     kit_slugs = [p.stem for p in sorted(kit_dir.glob("*.html"))] if kit_dir.exists() else []
 
-    urls = [(f"{BASE}/", "1.0")]
-    urls += [(f"{BASE}/guides/index.html", "0.9")]
-    urls += [(f"{BASE}/guides/{s}.html", "0.9") for s in _ordered_slugs(guide_slugs, guide_order)]
-    urls += [(f"{BASE}/kits/{s}.html", "0.8") for s in _ordered_slugs(kit_slugs, list(KITS))]
+    # (url, priority, source file the <lastmod> is read from)
+    entries = [(f"{BASE}/", "1.0", site_root / "index.html")]
+    entries += [(f"{BASE}/guides/index.html", "0.9", site_root / "guides" / "index.html")]
+    entries += [(f"{BASE}/guides/{s}.html", "0.9", site_root / "guides" / f"{s}.html")
+                for s in _ordered_slugs(guide_slugs, guide_order)]
+    entries += [(f"{BASE}/kits/{s}.html", "0.8", kit_dir / f"{s}.html")
+                for s in _ordered_slugs(kit_slugs, list(KITS))]
 
-    new_set = {u for u, _ in urls}
+    new_set = {u for u, _, _ in entries}
     missing = existing_sitemap_urls(site_root) - new_set
     if missing:
         raise SystemExit(
@@ -350,16 +369,28 @@ def build_sitemap(site_root, guide_order):
         )
 
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    for u, pr in urls:
-        sm += f"  <url><loc>{u}</loc><changefreq>weekly</changefreq><priority>{pr}</priority></url>\n"
+    for u, pr, src in entries:
+        lm = _lastmod(src)
+        lm_tag = f"<lastmod>{lm}</lastmod>" if lm else ""
+        sm += f"  <url><loc>{u}</loc>{lm_tag}<changefreq>weekly</changefreq><priority>{pr}</priority></url>\n"
     sm += "</urlset>\n"
     (site_root / "sitemap.xml").write_text(sm, encoding="utf-8")
-    return len(urls)
+    return len(entries)
 
 
 def load_articles():
     content = json.loads((ROOT / "guides_content.json").read_text(encoding="utf-8"))
     return content["articles"] if isinstance(content, dict) else content
+
+
+def write_if_changed(path: Path, text: str) -> bool:
+    """Write only when content actually differs, so file mtimes (and therefore
+    the sitemap's <lastmod>) reflect real content changes instead of bumping to
+    "today" on every rebuild — which would train crawlers to distrust the signal."""
+    if path.exists() and path.read_text(encoding="utf-8") == text:
+        return False
+    path.write_text(text, encoding="utf-8")
+    return True
 
 
 def build_site(out_root=None):
@@ -370,11 +401,14 @@ def build_site(out_root=None):
 
     gdir = out_root / "guides"
     gdir.mkdir(parents=True, exist_ok=True)
+    changed = 0
     for a in articles:
-        (gdir / f"{a['slug']}.html").write_text(guide_page(a, articles, pz), encoding="utf-8")
-    (gdir / "index.html").write_text(guides_index(articles), encoding="utf-8")
+        if write_if_changed(gdir / f"{a['slug']}.html", guide_page(a, articles, pz)):
+            changed += 1
+    if write_if_changed(gdir / "index.html", guides_index(articles)):
+        changed += 1
     n = build_sitemap(out_root, [a["slug"] for a in articles])
-    print(f"Built {len(articles)} guide pages + guides/index.html + sitemap ({n} urls).")
+    print(f"Built {len(articles)} guide pages ({changed} changed) + guides/index.html + sitemap ({n} urls).")
     return len(articles), n
 
 
