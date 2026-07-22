@@ -349,6 +349,44 @@ def guide_page(art, articles, pz=None):
 </body></html>"""
 
 
+def hub_ld(articles):
+    """Structured data for the guides hub: a BreadcrumbList plus a CollectionPage
+    whose ItemList enumerates every guide, in the site's own order.
+
+    The hub is the one page that links to all 26 guides, so giving crawlers and
+    AI answer engines a machine-readable index of those URLs (name + canonical
+    url) makes it a proper entry point instead of an anonymous wall of chips."""
+    items = [
+        {"@type": "ListItem", "position": i,
+         "url": f"{BASE}/guides/{a['slug']}.html",
+         "name": _strip_lead_emoji(a.get("nav_label") or a["h1"])}
+        for i, a in enumerate(articles, start=1)
+    ]
+    breadcrumb = {
+        "@context": "https://schema.org", "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{BASE}/"},
+            {"@type": "ListItem", "position": 2, "name": "Party Guides",
+             "item": f"{BASE}/guides/index.html"},
+        ],
+    }
+    collection = {
+        "@context": "https://schema.org", "@type": "CollectionPage",
+        "name": "Free kids party guides",
+        "description": ("Free party guides for kids ages 4-9: themed party games, "
+                        "escape-room how-tos, age guides and printable activities."),
+        "url": f"{BASE}/guides/index.html",
+        "isPartOf": {"@type": "WebSite", "name": "Escape in an Envelope", "url": f"{BASE}/"},
+        "mainEntity": {"@type": "ItemList", "numberOfItems": len(items),
+                       "itemListOrder": "https://schema.org/ItemListOrderAscending",
+                       "itemListElement": items},
+    }
+    return "\n".join(
+        f'<script type="application/ld+json">{json.dumps(x, ensure_ascii=False)}</script>'
+        for x in (breadcrumb, collection)
+    )
+
+
 def guides_index(articles):
     cards = "".join(
         f'<a class="chip" href="{a["slug"]}.html" style="padding:14px 18px;font-size:15px">{a["nav_label"]}</a>'
@@ -363,6 +401,7 @@ def guides_index(articles):
 <meta name="theme-color" content="#3d3a5c">
 <meta property="og:title" content="Free Kids Party Games &amp; Escape Room Guides">
 <meta property="og:image" content="{BASE}/pins/free-printable-pin.png">
+{hub_ld(articles)}
 <style>{css_for()}</style></head><body>
 <div class="top"><div class="wrap"><a class="brand" href="../index.html">🔐✉️ Escape in an Envelope</a><span class="crumb">Party Guides</span></div></div>
 <header class="hero"><div class="emoji">🎉</div>

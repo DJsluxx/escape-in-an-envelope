@@ -204,14 +204,35 @@ def test_ordered_guides_emit_howto_ld(built_site: Path) -> None:
 
 
 def test_answer_first_lead_rendered(built_site: Path) -> None:
-    """AEO: guides that declare an `answer` render it as a visible answer-first
-    lead paragraph at the top of the article."""
+    """AEO: EVERY guide declares an `answer` and renders it as a visible
+    answer-first lead paragraph at the top of the article. Asserting full
+    coverage (not a floor) makes a new guide without a lead fail the suite."""
     articles = build_guides.load_articles()
-    with_answer = [a for a in articles if a.get("answer")]
-    assert len(with_answer) >= 10, "answer-first leads not authored"
-    for art in with_answer:
+    missing = [a["slug"] for a in articles if not a.get("answer")]
+    assert not missing, f"guides with no answer-first lead: {missing}"
+    for art in articles:
         text = (built_site / "guides" / f"{art['slug']}.html").read_text(encoding="utf-8")
         assert '<p class="answer">' in text, f"{art['slug']} missing answer lead"
+
+
+def test_guides_hub_has_collection_itemlist_ld(built_site: Path) -> None:
+    """AEO: the hub carries a BreadcrumbList + a CollectionPage whose ItemList
+    enumerates every guide URL, so crawlers get a machine-readable index."""
+    articles = build_guides.load_articles()
+    blocks = _ld_blocks((built_site / "guides" / "index.html").read_text(encoding="utf-8"))
+    types = {b.get("@type") for b in blocks}
+    assert {"BreadcrumbList", "CollectionPage"} <= types, types
+
+    collection = next(b for b in blocks if b["@type"] == "CollectionPage")
+    item_list = collection["mainEntity"]
+    assert item_list["@type"] == "ItemList"
+    assert item_list["numberOfItems"] == len(articles)
+
+    listed = {i["url"] for i in item_list["itemListElement"]}
+    expected = {f"{build_guides.BASE}/guides/{a['slug']}.html" for a in articles}
+    assert listed == expected, f"hub ItemList missing: {sorted(expected - listed)}"
+    assert [i["position"] for i in item_list["itemListElement"]] == list(range(1, len(articles) + 1))
+    assert all(i["name"] and not i["name"][0].isspace() for i in item_list["itemListElement"])
 
 
 def test_build_writes_only_guides_and_sitemap(built_site: Path) -> None:
