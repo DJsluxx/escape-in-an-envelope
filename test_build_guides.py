@@ -107,13 +107,25 @@ def gumroad_hrefs(text: str) -> list[str]:
 
 
 def test_every_gumroad_href_is_utm_tagged(built_site: Path) -> None:
-    """No Gumroad link (product /l/ or shop root) may leave the site untagged."""
+    """Any Gumroad link (product /l/ or shop root) that appears must be UTM-tagged.
+    Pillar/head-term guides deliberately carry none — they route theme-undecided
+    readers to the on-brand kit index instead of the mixed Gumroad profile."""
     for page in (built_site / "guides").glob("*.html"):
-        hrefs = gumroad_hrefs(page.read_text(encoding="utf-8"))
-        assert hrefs, f"{page.name} has no Gumroad links at all"
-        for h in hrefs:
+        for h in gumroad_hrefs(page.read_text(encoding="utf-8")):
             assert "utm_source=eie-site" in h and "utm_medium=" in h \
                 and "utm_campaign=" in h, f"{page.name}: untagged Gumroad href {h}"
+
+
+def test_pillar_guides_route_to_kit_index(built_site: Path) -> None:
+    """Head-term guides (no themed kit) send undecided readers to the on-brand,
+    escape-only kit index — never the mixed Gumroad profile (off-theme ebooks)."""
+    articles = build_guides.load_articles()
+    pillars = [a for a in articles if a.get("kit") not in build_guides.KITS]
+    assert pillars, "expected some pillar guides"
+    for art in pillars:
+        text = (built_site / "guides" / f"{art['slug']}.html").read_text(encoding="utf-8")
+        assert 'href="../index.html"' in text, f"{art['slug']} not routed to kit index"
+        assert not gumroad_hrefs(text), f"{art['slug']} still links the mixed Gumroad profile"
 
 
 def test_no_bare_gumroad_product_links(built_site: Path) -> None:
@@ -128,9 +140,16 @@ def test_guide_utm_medium_and_campaign(built_site: Path) -> None:
     articles = build_guides.load_articles()
     kit_guides = [a for a in articles if a.get("kit") in build_guides.KITS]
     assert kit_guides, "no guide funnels to a known kit?"
-    for art in kit_guides[:3]:
+    # every themed guide whose kit has a real Gumroad product must keep its UTM'd
+    # deep link (seasonal kits with no Gumroad slug funnel via an override instead).
+    checked = 0
+    for art in kit_guides:
+        if not build_guides.KITS[art["kit"]][2]:  # (emoji,title,gslug,...) gslug is [2]
+            continue
         text = (built_site / "guides" / f"{art['slug']}.html").read_text(encoding="utf-8")
         assert f"utm_medium=guide&utm_campaign={art['slug']}" in text, art["slug"]
+        checked += 1
+    assert checked >= 10, f"expected many deep-linked themed guides, checked {checked}"
     hub = (built_site / "guides" / "index.html").read_text(encoding="utf-8")
     for h in gumroad_hrefs(hub):
         assert "utm_medium=index&utm_campaign=guides-index" in h, f"hub: {h}"

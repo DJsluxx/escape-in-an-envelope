@@ -169,12 +169,17 @@ def funnel_block(art):
 <p>{esc(art["funnel_pitch"])}</p>
 <div class="cta"><a class="btn gum" href="{cta_href}"{rel}>{esc(cta_label)}</a>{etsy_btn}</div>
 <p class="price">Instant PDF · print at home · nothing ships · reusable · {price_extra}<a href="../kits/{funnel_kit}.html">see everything inside →</a></p></div>"""
-    # generic funnel (pillar pages)
+    # generic funnel (pillar / head-term pages). The reader hasn't picked a theme
+    # yet, so send them to the on-brand, escape-only kit index — each kit there
+    # deep-links to its own Gumroad product. We deliberately do NOT link the Gumroad
+    # *profile* here: it also lists off-theme ebooks, which reads as unfocused to a
+    # parent hunting for a kids' escape room. The Etsy shop is escape-only, so it
+    # stays as the marketplace option.
     return f"""<div class="funnel"><div class="e">🔐✉️</div>
 <h3>Want it done for you? Grab a themed kit</h3>
 <p>{esc(art["funnel_pitch"])}</p>
-<div class="cta"><a class="btn gum" href="{utm(GUM, "guide", campaign)}" rel="noopener">Browse all kits on Gumroad →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
-<p class="price">13 themes · ages 4–9 · instant PDF · ~$9 each · <a href="../index.html">see all kits →</a></p></div>"""
+<div class="cta"><a class="btn gum" href="../index.html">See all 13 escape kits →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
+<p class="price">13 themes · ages 4–9 · instant PDF · ~$9 each · one-click checkout on each kit page</p></div>"""
 
 
 def free_download_block():
@@ -345,7 +350,7 @@ def guide_page(art, articles, pz=None):
 <div class="wrap">
 {body_html}
 </div>
-<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="index.html">Party guides</a> · <a href="{ETSY}">Etsy</a> · <a href="{utm(GUM, "guide", slug)}">Gumroad</a></footer>
+<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="index.html">Party guides</a> · <a href="../index.html">All kits</a> · <a href="{ETSY}">Etsy</a></footer>
 </body></html>"""
 
 
