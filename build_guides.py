@@ -102,6 +102,9 @@ h1{font-size:clamp(25px,4.6vw,38px);color:var(--primary);margin:10px auto 8px;fo
 .funnel .e{font-size:44px}
 .funnel h3{color:var(--primary);font-size:22px;margin:6px 0 8px}
 .funnel p{opacity:.9;max-width:560px;margin:0 auto 8px}
+.midcta{background:#fff;border:2px dashed var(--accent);border-radius:14px;padding:14px 18px;margin:26px 0;display:flex;gap:14px 18px;align-items:center;justify-content:center;flex-wrap:wrap;text-align:center}
+.midcta span{font-weight:700;color:var(--primary)}
+.midcta .btn{padding:10px 22px;font-size:15px}
 .price{opacity:.7;font-size:13px;margin-top:6px}
 details{background:#fff;border:2px solid var(--band);border-radius:12px;padding:2px 16px;margin-bottom:10px}
 summary{font-weight:800;color:var(--primary);cursor:pointer;padding:12px 0;list-style:none}
@@ -126,9 +129,12 @@ def css_for(theme_overrides=None):
     return "\n" + root + CSS_BODY
 
 
-def render_sections(sections):
+def render_sections(sections, mid_html="", mid_after=None):
+    """Render the article sections. If ``mid_html`` is given, it is injected once,
+    immediately after the section at index ``mid_after`` — a mid-article CTA that
+    catches readers who never scroll to the bottom funnel."""
     out = []
-    for s in sections:
+    for i, s in enumerate(sections):
         out.append(f'<h2>{esc(s["h2"])}</h2>')
         for p in s.get("paragraphs", []) or []:
             out.append(f"<p>{esc(p)}</p>")
@@ -137,6 +143,8 @@ def render_sections(sections):
             tag = "ol" if s.get("ordered") else "ul"
             lis = "".join(f"<li>{esc(b)}</li>" for b in bullets)
             out.append(f"<{tag}>{lis}</{tag}>")
+        if mid_html and i == mid_after:
+            out.append(mid_html)
     return "\n".join(out)
 
 
@@ -180,6 +188,30 @@ def funnel_block(art):
 <p>{esc(art["funnel_pitch"])}</p>
 <div class="cta"><a class="btn gum" href="../index.html">See all 13 escape kits →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
 <p class="price">13 themes · ages 4–9 · instant PDF · ~$9 each · one-click checkout on each kit page</p></div>"""
+
+
+def inline_cta_block(art):
+    """A slim mid-article nudge, visually distinct from (and lighter than) the full
+    bottom funnel, so a reader who bounces before the end still sees one buy option.
+    Kit guides deep-link to their own Gumroad product with a ``-mid`` UTM campaign so
+    Gumroad's referrer data separates mid-article conversions from the bottom funnel;
+    pillar/head-term guides point to the on-brand escape-only kit index (no Gumroad
+    profile link, matching the bottom funnel's routing)."""
+    funnel_kit = art.get("kit")
+    over = art.get("funnel") or {}
+    if funnel_kit and funnel_kit in KITS:
+        emoji, title, gslug, ages, price, etsy_url = KITS[funnel_kit]
+        cta_href = over.get("cta_href", f"{GUM}/l/{gslug}" if gslug else None)
+        if not cta_href:
+            return ""  # seasonal kit w/ no direct product link: skip; bottom funnel still shows
+        cta_href = utm(cta_href, "guide", f"{art['slug']}-mid")
+        rel = ' rel="noopener"' if cta_href.startswith("http") else ""
+        label = over.get("mid_cta_label", f"Get the {over.get('title', title)} kit — ${price} →")
+        return (f'<div class="midcta"><span>{emoji} Short on time? Skip the prep —'
+                f' it prints in 5 minutes.</span>'
+                f'<a class="btn gum" href="{cta_href}"{rel}>{esc(label)}</a></div>')
+    return ('<div class="midcta"><span>🔐✉️ Want it done for you?</span>'
+            '<a class="btn gum" href="../index.html">Browse the 13 escape kits →</a></div>')
 
 
 def free_download_block():
@@ -282,7 +314,15 @@ def guide_page(art, articles, pz=None):
     # at the very top of the article, so AI answer engines (and skimming parents)
     # can extract/quote the answer without wading through the essay opening.
     answer_html = f'<p class="answer">{esc(art["answer"])}</p>' if art.get("answer") else ""
-    body.append(f'<div class="article">{answer_html}{render_sections(art["sections"])}')
+    # Mid-article CTA: injected after the middle section on non-free guides with
+    # enough sections that a mid-point exists (>=3), leaving real content below it.
+    sections = art["sections"]
+    mid_html, mid_after = "", None
+    if not is_free and len(sections) >= 3:
+        mid_html = inline_cta_block(art)
+        if mid_html:
+            mid_after = (len(sections) - 1) // 2
+    body.append(f'<div class="article">{answer_html}{render_sections(sections, mid_html, mid_after)}')
     if is_free and pz:
         body.append(render_free_puzzle_html(pz))
     body.append("</div>")

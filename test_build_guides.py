@@ -254,6 +254,32 @@ def test_guides_hub_has_collection_itemlist_ld(built_site: Path) -> None:
     assert all(i["name"] and not i["name"][0].isspace() for i in item_list["itemListElement"])
 
 
+def test_mid_article_cta_present_and_tagged(built_site: Path) -> None:
+    """Conversion: multi-section guides carry a mid-article CTA (.midcta) so a
+    reader who bounces before the bottom funnel still sees one buy option. On kit
+    guides it deep-links the kit's Gumroad product with a distinct `-mid` UTM
+    campaign (separating mid-article conversions from the bottom funnel); on pillar
+    guides it routes to the on-brand kit index with no Gumroad profile link."""
+    articles = build_guides.load_articles()
+    kit_mid = pillar_mid = 0
+    for art in articles:
+        if art["slug"] == build_guides.FREE_SLUG or len(art["sections"]) < 3:
+            continue
+        text = (built_site / "guides" / f"{art['slug']}.html").read_text(encoding="utf-8")
+        kit = art.get("kit")
+        if kit in build_guides.KITS and build_guides.KITS[kit][2]:  # has a real Gumroad slug
+            assert 'class="midcta"' in text, f"{art['slug']} missing mid-article CTA"
+            assert f"utm_campaign={art['slug']}-mid" in text, f"{art['slug']} mid CTA not -mid tagged"
+            kit_mid += 1
+        elif kit not in build_guides.KITS:  # pillar / head-term
+            assert 'class="midcta"' in text, f"{art['slug']} missing mid-article CTA"
+            # the mid CTA appears strictly before the bottom funnel
+            assert text.index('class="midcta"') < text.index('class="funnel"'), art["slug"]
+            pillar_mid += 1
+    assert kit_mid >= 10, f"expected many kit guides with a mid CTA, got {kit_mid}"
+    assert pillar_mid >= 1, f"expected pillar guides with a mid CTA, got {pillar_mid}"
+
+
 def test_build_writes_only_guides_and_sitemap(built_site: Path) -> None:
     """The builder must never create verification/key files."""
     top_level = {p.name for p in built_site.iterdir()}
