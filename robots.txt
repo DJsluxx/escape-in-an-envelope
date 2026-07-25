@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
 Sitemap: https://djsluxx.github.io/escape-in-an-envelope/sitemap.xml
+# AI answer-engine map (llms.txt convention): https://djsluxx.github.io/escape-in-an-envelope/llms.txt
