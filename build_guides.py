@@ -374,8 +374,11 @@ def guide_page(art, articles, pz=None):
 <meta name="theme-color" content="{theme_color}">
 <meta property="og:type" content="article"><meta property="og:title" content="{esc(art["h1"])}">
 <meta property="og:description" content="{esc(art["meta_description"])}"><meta property="og:url" content="{BASE}/guides/{slug}.html">
-<meta property="og:image" content="{og_img}">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{og_img}">
+<meta property="og:image" content="{og_img}"><meta property="og:image:alt" content="{esc(img_alt)}">
+<meta property="og:site_name" content="Escape in an Envelope"><meta property="og:locale" content="en_US">
+<meta property="article:author" content="Escape in an Envelope">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{og_img}"><meta name="twitter:image:alt" content="{esc(img_alt)}">
+<meta name="twitter:title" content="{esc(art["h1"])}"><meta name="twitter:description" content="{esc(art["meta_description"])}">
 <script type="application/ld+json">{json.dumps(article_ld, ensure_ascii=ld_ascii)}</script>
 <script type="application/ld+json">{json.dumps(faq_ld, ensure_ascii=ld_ascii)}</script>
 {extra_ld_html}
@@ -444,8 +447,13 @@ def guides_index(articles):
 <meta name="description" content="Free, practical party guides: dinosaur, unicorn, space, pirate, superhero, spy, princess, mermaid, jungle safari &amp; ninja party games, plus how to make a kids escape room at home — with a free printable.">
 <link rel="canonical" href="{BASE}/guides/index.html">
 <meta name="theme-color" content="#3d3a5c">
-<meta property="og:title" content="Free Kids Party Games &amp; Escape Room Guides">
-<meta property="og:image" content="{BASE}/pins/free-printable-pin.png">
+<meta property="og:type" content="website"><meta property="og:title" content="Free Kids Party Games &amp; Escape Room Guides">
+<meta property="og:description" content="Free, practical party guides for kids ages 4&ndash;9 &mdash; themed party games plus how to make an escape room at home, with a free printable.">
+<meta property="og:url" content="{BASE}/guides/index.html">
+<meta property="og:image" content="{BASE}/pins/free-printable-pin.png"><meta property="og:image:alt" content="Free printable kids party games and escape room guides">
+<meta property="og:site_name" content="Escape in an Envelope"><meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{BASE}/pins/free-printable-pin.png"><meta name="twitter:image:alt" content="Free printable kids party games and escape room guides">
+<meta name="twitter:title" content="Free Kids Party Games &amp; Escape Room Guides"><meta name="twitter:description" content="Free party guides for kids ages 4&ndash;9 &mdash; themed games plus a make-at-home escape room and a free printable.">
 {hub_ld(articles)}
 <style>{css_for()}</style></head><body>
 <div class="top"><div class="wrap"><a class="brand" href="../index.html">🔐✉️ Escape in an Envelope</a><span class="crumb">Party Guides</span></div></div>

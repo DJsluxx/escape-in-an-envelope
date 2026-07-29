@@ -154,8 +154,10 @@ def page(slug, k):
 <meta name="theme-color" content="#3d3a5c">
 <meta property="og:type" content="product"><meta property="og:title" content="{esc(title)} — Printable Kids Escape Room">
 <meta property="og:description" content="{esc(hook)}"><meta property="og:url" content="{BASE}/kits/{slug}.html">
-<meta property="og:image" content="{BASE}/pins/{slug}-pin.png">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{BASE}/pins/{slug}-pin.png">
+<meta property="og:image" content="{BASE}/pins/{slug}-pin.png"><meta property="og:image:alt" content="{esc(title)} &mdash; printable kids escape room">
+<meta property="og:site_name" content="Escape in an Envelope"><meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{BASE}/pins/{slug}-pin.png"><meta name="twitter:image:alt" content="{esc(title)} &mdash; printable kids escape room">
+<meta name="twitter:title" content="{esc(title)} &mdash; Printable Kids Escape Room"><meta name="twitter:description" content="{esc(hook)}">
 <script type="application/ld+json">{json.dumps(ld)}</script>
 <style>{CSS}</style></head><body>
 <div class="top"><div class="wrap"><a class="brand" href="../index.html">🔐✉️ Escape in an Envelope</a><span class="crumb">Kids Escape Rooms › {esc(title.split(':')[0])}</span></div></div>

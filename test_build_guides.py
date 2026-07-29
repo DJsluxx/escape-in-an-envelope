@@ -280,6 +280,65 @@ def test_mid_article_cta_present_and_tagged(built_site: Path) -> None:
     assert pillar_mid >= 1, f"expected pillar guides with a mid CTA, got {pillar_mid}"
 
 
+GUIDE_SHARE_TAGS = (
+    '<meta property="og:site_name"',
+    '<meta property="og:image:alt"',
+    '<meta property="og:locale"',
+    '<meta name="twitter:card"',
+    '<meta name="twitter:title"',
+    '<meta name="twitter:description"',
+    '<meta name="twitter:image:alt"',
+)
+
+
+def test_every_guide_has_complete_share_meta(built_site: Path) -> None:
+    """Distribution: social sharing is the site's ONE active human-bringing channel,
+    so every guide must render a complete Open Graph + Twitter card (Rich Pin data
+    on Pinterest, full preview on FB/WhatsApp/X). A guide missing any share tag ships
+    a bare link on the exact channel that matters."""
+    for page in (built_site / "guides").glob("*.html"):
+        if page.name == "index.html":
+            continue
+        text = page.read_text(encoding="utf-8")
+        for tag in GUIDE_SHARE_TAGS:
+            assert tag in text, f"{page.name} missing {tag}"
+        # image tags must carry a real URL, not an empty attribute
+        assert 'content="{' not in text, f"{page.name} has an unrendered template field"
+
+
+def test_hub_has_complete_share_meta(built_site: Path) -> None:
+    """The guides hub is a top share/entry point; it must carry a full OG+Twitter
+    card (it previously had only og:title + og:image = a broken share preview)."""
+    text = (built_site / "guides" / "index.html").read_text(encoding="utf-8")
+    for tag in (
+        '<meta property="og:type"',
+        '<meta property="og:url"',
+        '<meta property="og:description"',
+        '<meta property="og:site_name"',
+        '<meta name="twitter:card"',
+        '<meta name="twitter:title"',
+        '<meta name="twitter:description"',
+    ):
+        assert tag in text, f"guides hub missing {tag}"
+
+
+def test_kit_pages_have_complete_share_meta() -> None:
+    """build_kit_pages: every kit page carries og:site_name + twitter title/desc/alt
+    so a shared kit link renders a full branded card, not a bare URL."""
+    import build_kit_pages
+
+    for slug in ("dino-6-8", "ninja-7-9"):
+        text = build_kit_pages.page(slug, build_kit_pages.KITS[slug])
+        for tag in (
+            '<meta property="og:site_name"',
+            '<meta property="og:image:alt"',
+            '<meta name="twitter:title"',
+            '<meta name="twitter:description"',
+            '<meta name="twitter:image:alt"',
+        ):
+            assert tag in text, f"kit {slug} missing {tag}"
+
+
 def test_build_writes_only_guides_and_sitemap(built_site: Path) -> None:
     """The builder must never create verification/key files."""
     top_level = {p.name for p in built_site.iterdir()}
