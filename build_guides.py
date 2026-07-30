@@ -572,7 +572,17 @@ def build_site(out_root=None):
 
 
 def main():
+    # `build_site()` stays side-effect-free (tests call it with a temp root); only the
+    # CLI entrypoint may reach the network, and only when explicitly asked via --ping.
+    ping = "--ping" in sys.argv
     build_site(ROOT)
+    if ping:
+        try:
+            import submit_indexnow
+
+            submit_indexnow.main()
+        except Exception as e:  # a failed notify must never fail the build
+            print(f"WARN: IndexNow ping skipped ({type(e).__name__}: {e})")
 
 
 if __name__ == "__main__":
