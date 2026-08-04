@@ -2,11 +2,16 @@
 """build_kit_pages.py — generate one SEO landing page per escape-room kit.
 
 Each kit gets its own page at /kits/<slug>.html: keyword-rich title/description,
-Product JSON-LD, a direct "Buy" button to that exact Gumroad product (+ Etsy shop),
-the 6-puzzle trail, FAQ, and cross-links. Also regenerates index.html's kit cards to
-link to these pages, and rebuilds sitemap.xml. Free, on-machine, static — deploys to
-GitHub Pages. Purpose: give every Pinterest pin a dedicated high-converting destination
-and add 13 indexable pages for long-tail search ("<theme> escape room printable").
+Product JSON-LD, a direct "Buy" button to that exact Gumroad product (+ Etsy shop)
+for kits that actually have one, the 6-puzzle trail, FAQ, and cross-links. Kits with
+no live Gumroad slug (KITS[...][9] is None) render no buy button, no fake price line,
+and no InStock offer in the JSON-LD — the CTA instead routes to the kits that ARE for
+sale (../index.html), so seasonal search intent never dead-ends on an unbuyable page.
+Also rebuilds sitemap.xml (index.html itself is a hand-authored static file with no
+generator — its kit cards are not touched by this script). Free, on-machine, static —
+deploys to GitHub Pages. Purpose: give every Pinterest pin a dedicated high-converting
+destination and add 13 indexable pages for long-tail search ("<theme> escape room
+printable").
 
     python build_kit_pages.py
 """
@@ -123,14 +128,33 @@ details p{padding:0 0 12px;opacity:.85}
 footer{text-align:center;padding:30px 20px;opacity:.7;font-size:14px}
 """
 
+AVAILABLE_COUNT = sum(1 for k in KITS.values() if k[9])  # kits with a live gumroad slug
+
+
 def page(slug, k):
     emoji,title,ages,players,mins,price,hook,puzzles,cert,gslug,season,etsy_url = k
+    # A kit with no gumroad slug has no purchasable destination at all (no Gumroad
+    # product, no specific Etsy listing) — never show a "Buy" CTA or a fake $ price
+    # for one, and never claim seasonal urgency ("grab it now") for a product that
+    # cannot actually be grabbed. Route straight to the kits that ARE buyable instead
+    # of dead-ending the highest-intent seasonal search traffic on this page.
+    available = gslug is not None
     seo_title = f"{title} — Printable Escape Room for Kids Ages {ages} | Escape in an Envelope"
     desc = f"{title}: a print-at-home escape room for kids ages {ages}. Six puzzles, zero prep, instant PDF download. {hook}"
-    gum_url = utm(f"{GUM}/l/{gslug}" if gslug else GUM, "kit", slug)
     etsy_href = etsy_url or ETSY
-    buy_gum = f'<a class="btn gum" href="{gum_url}" rel="noopener">Buy on Gumroad — ${price} →</a>' if gslug else ""
-    season_line = f'<p class="price">⏰ Seasonal — a {season} favourite. Grab it a few weeks ahead.</p>' if season else ""
+    if available:
+        gum_url = utm(f"{GUM}/l/{gslug}", "kit", slug)
+        buy_gum = f'<a class="btn gum" href="{gum_url}" rel="noopener">Buy on Gumroad — ${price} →</a>'
+        etsy_btn = f'<a class="btn etsy" href="{etsy_href}" rel="noopener">Shop on Etsy →</a>'
+        avail_line = '<p class="price">Instant PDF download · nothing ships · prints on any home printer · reusable</p>'
+        season_line = f'<p class="price">⏰ Seasonal — a {season} favourite. Grab it a few weeks ahead.</p>' if season else ""
+    else:
+        gum_url = None
+        buy_gum = '<a class="btn gum" href="../index.html">Browse available kits →</a>'
+        etsy_btn = f'<a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a>'
+        avail_line = (f'<p class="price">This {season or "themed"} kit isn\'t available to buy yet — '
+                       f'browse the {AVAILABLE_COUNT} kits on sale today instead.</p>')
+        season_line = ""
     trail = "".join(f"<li>{esc(p)}</li>" for p in puzzles)
     others = "".join(
         f'<a class="chip" href="{s}.html">{KITS[s][0]} {esc(KITS[s][1].split(":")[0])}</a>'
@@ -142,8 +166,13 @@ def page(slug, k):
       "description":desc,"brand":{"@type":"Brand","name":"Escape in an Envelope"},
       "category":"Toys & Games > Games > Party Games",
       "audience":{"@type":"PeopleAudience","suggestedMinAge":ages.split("-")[0],"suggestedMaxAge":ages.split("-")[1]},
-      "offers":{"@type":"Offer","price":price,"priceCurrency":"USD","availability":"https://schema.org/InStock","url":gum_url}
     }
+    # Only claim an Offer in structured data when a real, buyable product exists —
+    # a Product with no offers.url would be a false "in stock" signal to search/AI
+    # engines for a kit that cannot actually be purchased anywhere yet.
+    if available:
+        ld["offers"] = {"@type":"Offer","price":price,"priceCurrency":"USD",
+                         "availability":"https://schema.org/InStock","url":gum_url}
     return f"""<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="p:domain_verify" content="acbbe5c41ba31559d65bd39fffa9f24c">
@@ -167,8 +196,8 @@ def page(slug, k):
 <p class="meta">Printable · Ages {ages} · {players} players · {mins} min</p>
 <p class="hook">{esc(hook)}</p>
 <img class="pin-img" src="{BASE}/pins/{slug}-pin.png" alt="{esc(title)} printable kids escape room" width="270" loading="lazy" />
-<div class="cta">{buy_gum}<a class="btn etsy" href="{etsy_href}" rel="noopener">Shop on Etsy →</a></div>
-<p class="price">Instant PDF download · nothing ships · prints on any home printer · reusable</p>
+<div class="cta">{buy_gum}{etsy_btn}</div>
+{avail_line}
 {season_line}
 </header>
 <div class="wrap">
@@ -184,7 +213,7 @@ def page(slug, k):
 <div class="step"><div class="e">🛒</div><b>1. Buy &amp; download</b>Instant PDF — nothing ships.</div>
 <div class="step"><div class="e">🖨️</div><b>2. Print &amp; hide</b>Print the cards, tape up the signs.</div>
 <div class="step"><div class="e">🔎</div><b>3. Play</b>Kids solve the trail and crack the code!</div></div>
-<div class="cta" style="margin-top:22px">{buy_gum}<a class="btn etsy" href="{etsy_href}" rel="noopener">Shop on Etsy →</a></div></section>
+<div class="cta" style="margin-top:22px">{buy_gum}{etsy_btn}</div></section>
 <section><h2>Questions</h2>
 <details open><summary>What do I get?</summary><p>An instant PDF: 6 clue cards, 7 zone signs, a code card and finale keypad, {esc(cert)} certificates, and a full host guide with the answer key. Nothing is shipped — you print at home.</p></details>
 <details><summary>Do I need anything special?</summary><p>Just a home printer (colour recommended) and some tape. No app, no props, no batteries, zero prep.</p></details>
@@ -198,13 +227,19 @@ def page(slug, k):
 
 def main():
     kdir = ROOT / "kits"; kdir.mkdir(exist_ok=True)
+    # write_if_changed (not an unconditional write) so a kit page's file mtime
+    # only moves when its content actually changed — otherwise every rebuild
+    # bumps sitemap <lastmod> for all 13 pages regardless, training crawlers to
+    # distrust the freshness signal (same reasoning as build_guides.py).
+    changed = 0
     for slug,k in KITS.items():
-        (kdir / f"{slug}.html").write_text(page(slug,k), encoding="utf-8")
+        if build_guides.write_if_changed(kdir / f"{slug}.html", page(slug,k)):
+            changed += 1
     # sitemap — delegate to build_guides.build_sitemap so the superset guard runs
     # (a kit-only sitemap here used to silently drop every /guides/ URL).
     guide_order = [a["slug"] for a in build_guides.load_articles()]
     n = build_guides.build_sitemap(ROOT, guide_order)
-    print(f"Built {len(KITS)} kit pages + sitemap ({n} urls).")
+    print(f"Built {len(KITS)} kit pages ({changed} changed) + sitemap ({n} urls).")
 
 if __name__ == "__main__":
     main()

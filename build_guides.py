@@ -129,7 +129,36 @@ def css_for(theme_overrides=None):
     return "\n" + root + CSS_BODY
 
 
-def render_sections(sections, mid_html="", mid_after=None):
+def linkify_store_mentions(escaped_text, art, medium="guide"):
+    """Turn our own plain-text storefront mentions inside already-escaped copy
+    into tracked, clickable links, instead of leaving them as buried dead text
+    a reader can't click. Routes to the SAME destination the page's real buy
+    button already uses: the specific Gumroad product for themed-kit guides,
+    or the on-site kit index for pillar/head-term guides — pillar guides must
+    never link the mixed Gumroad profile (it also lists off-theme ebooks;
+    see test_pillar_guides_route_to_kit_index)."""
+    slug = art["slug"]
+    kit = art.get("kit")
+    gslug = KITS[kit][2] if kit in KITS else None
+    out = escaped_text
+    if gslug:
+        gum_href = utm(f"{GUM}/l/{gslug}", medium, f"{slug}-body")
+        out = out.replace(
+            "salama62.gumroad.com",
+            f'<a href="{gum_href}" rel="noopener">salama62.gumroad.com</a>',
+        )
+    elif "salama62.gumroad.com" in out:
+        kit_index_link = '<a href="../index.html" rel="noopener">our themed kits shop</a>'
+        out = out.replace("at salama62.gumroad.com", f"in {kit_index_link}")
+        out = out.replace("salama62.gumroad.com", kit_index_link)
+    out = out.replace(
+        "our Etsy shop",
+        f'<a href="{ETSY}" rel="noopener">our Etsy shop</a>',
+    )
+    return out
+
+
+def render_sections(sections, art, mid_html="", mid_after=None):
     """Render the article sections. If ``mid_html`` is given, it is injected once,
     immediately after the section at index ``mid_after`` — a mid-article CTA that
     catches readers who never scroll to the bottom funnel."""
@@ -137,7 +166,7 @@ def render_sections(sections, mid_html="", mid_after=None):
     for i, s in enumerate(sections):
         out.append(f'<h2>{esc(s["h2"])}</h2>')
         for p in s.get("paragraphs", []) or []:
-            out.append(f"<p>{esc(p)}</p>")
+            out.append(f"<p>{linkify_store_mentions(esc(p), art)}</p>")
         bullets = s.get("bullets") or []
         if bullets:
             tag = "ol" if s.get("ordered") else "ul"
@@ -174,7 +203,7 @@ def funnel_block(art):
         price_extra = f'{esc(over["price_extra"])} · ' if over.get("price_extra") else ""
         return f"""<div class="funnel"><div class="e">{emoji}</div>
 <h3>The done-for-you version: {esc(h3_title)}</h3>
-<p>{esc(art["funnel_pitch"])}</p>
+<p>{linkify_store_mentions(esc(art["funnel_pitch"]), art)}</p>
 <div class="cta"><a class="btn gum" href="{cta_href}"{rel}>{esc(cta_label)}</a>{etsy_btn}</div>
 <p class="price">Instant PDF · print at home · nothing ships · reusable · {price_extra}<a href="../kits/{funnel_kit}.html">see everything inside →</a></p></div>"""
     # generic funnel (pillar / head-term pages). The reader hasn't picked a theme
@@ -185,7 +214,7 @@ def funnel_block(art):
     # stays as the marketplace option.
     return f"""<div class="funnel"><div class="e">🔐✉️</div>
 <h3>Want it done for you? Grab a themed kit</h3>
-<p>{esc(art["funnel_pitch"])}</p>
+<p>{linkify_store_mentions(esc(art["funnel_pitch"]), art)}</p>
 <div class="cta"><a class="btn gum" href="../index.html">See all 13 escape kits →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
 <p class="price">13 themes · ages 4–9 · instant PDF · ~$9 each · one-click checkout on each kit page</p></div>"""
 
@@ -220,6 +249,21 @@ def free_download_block():
 <p>The complete 3-puzzle mini escape room below, ready to print — clue cards, the setup guide, and a "You Escaped!" certificate. No email required.</p>
 <div class="cta"><a class="btn free" href="{FREE_PDF}" rel="noopener" download>⬇ Download the free printable</a></div>
 <p class="price">One page to print · set up in 5 minutes · household items only</p></div>"""
+
+
+def free_upsell_block():
+    """A themed-kit CTA card shown immediately after the free download — the
+    moment of peak intent on the site's strongest AEO/SEO asset (a reader who
+    just downloaded something free is the warmest lead on the page, and a
+    reader who bounces straight after the PDF never reaches the bottom
+    funnel). Routes to the on-site kit index rather than the Gumroad profile,
+    matching funnel_block's documented reasoning: the profile also lists
+    off-theme products, which reads as unfocused right after a themed ask."""
+    return f"""<div class="funnel" style="border-color:var(--band)"><div class="e">🎁</div>
+<h3>Loved the free mini? Skip the prep next time</h3>
+<p>The full themed kits turn this into a zero-prep party: six illustrated puzzles that chain into a clue trail, seven printable zone signs, a code-and-keypad finale, name certificates and a full host guide — one instant-download PDF, about $9. Pick the theme your child already loves.</p>
+<div class="cta"><a class="btn gum" href="../index.html">Browse the themed kits — from $9 →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
+<p class="price">Pirate · dino · space · spy · unicorn · mermaid &amp; more · instant PDF</p></div>"""
 
 
 def render_free_puzzle_html(pz):
@@ -310,6 +354,9 @@ def guide_page(art, articles, pz=None):
     body = []
     if is_free:
         body.append(free_download_block())
+        # Peak-intent CTA: right after the free download is the warmest moment on
+        # this page — a reader who bounces here never reaches the bottom funnel.
+        body.append(free_upsell_block())
     # Answer-first lead: a short, direct answer to the guide's core query rendered
     # at the very top of the article, so AI answer engines (and skimming parents)
     # can extract/quote the answer without wading through the essay opening.
@@ -322,7 +369,7 @@ def guide_page(art, articles, pz=None):
         mid_html = inline_cta_block(art)
         if mid_html:
             mid_after = (len(sections) - 1) // 2
-    body.append(f'<div class="article">{answer_html}{render_sections(sections, mid_html, mid_after)}')
+    body.append(f'<div class="article">{answer_html}{render_sections(sections, art, mid_html, mid_after)}')
     if is_free and pz:
         body.append(render_free_puzzle_html(pz))
     body.append("</div>")
@@ -463,8 +510,7 @@ def guides_index(articles):
 <div class="guidenav" style="margin-top:22px">{cards}</div></header>
 <div class="wrap"><section style="padding-top:26px"><h2>Ready-made escape room kits</h2>
 <p class="hook" style="margin:0 0 14px">Love the ideas but short on time? Every themed kit is an instant-download, print-at-home escape room — zero prep.</p>
-<div class="cta"><a class="btn gum" href="{utm(GUM, "index", "guides-index")}" rel="noopener">Browse kits on Gumroad →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
-<p style="text-align:center;margin-top:16px"><a href="../index.html">← See all 13 kits</a></p></section></div>
+<div class="cta"><a class="btn gum" href="../index.html">See all 13 kits →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div></section></div>
 <footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="{ETSY}">Etsy</a> · <a href="{utm(GUM, "index", "guides-index")}">Gumroad</a></footer>
 </body></html>"""
 
