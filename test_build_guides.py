@@ -9,6 +9,7 @@ Builds the whole site into a temp dir (never touching the live files) and checks
 """
 from __future__ import annotations
 
+import html as html_mod
 import re
 import shutil
 from pathlib import Path
@@ -337,6 +338,85 @@ def test_kit_pages_have_complete_share_meta() -> None:
             '<meta name="twitter:image:alt"',
         ):
             assert tag in text, f"kit {slug} missing {tag}"
+
+
+TITLE_RE = re.compile(r"<title>(.*?)</title>", re.DOTALL)
+DESC_RE = re.compile(r'<meta name="description" content="(.*?)">')
+H1_RE = re.compile(r"<h1[^>]*>(.*?)</h1>", re.DOTALL)
+# Google's practical SERP display budget: titles truncate around ~60 chars,
+# descriptions around ~155-160. Cycle 007 found 13 kit pages silently shipping
+# 81-96 char titles and 194-217 char descriptions since the generator's first
+# version — nothing enforced a cap, so the query-relevant words were being cut
+# out of every search snippet. These caps make that regression impossible.
+TITLE_MAX = 60
+DESC_MAX = 160
+INTERNAL_LINK_RE = re.compile(r'href="(?!https?://)([^"#]+\.html[^"]*)"')
+
+
+def _unescape(s: str) -> str:
+    return html_mod.unescape(s)
+
+
+def test_every_guide_has_seo_essentials(built_site: Path) -> None:
+    """Every guide page: unique, length-capped title + description, a real H1,
+    and at least 2 internal (on-site) links — the minimum bar for a page to be
+    able to rank for anything instead of just existing at a URL."""
+    seen_titles, seen_descs = set(), set()
+    for page in (built_site / "guides").glob("*.html"):
+        text = page.read_text(encoding="utf-8")
+        title_m, desc_m, h1_m = TITLE_RE.search(text), DESC_RE.search(text), H1_RE.search(text)
+        assert title_m and title_m.group(1).strip(), f"{page.name} missing <title>"
+        assert desc_m and desc_m.group(1).strip(), f"{page.name} missing meta description"
+        assert h1_m and _unescape(h1_m.group(1)).strip(), f"{page.name} missing real <h1>"
+        title, desc = _unescape(title_m.group(1)), _unescape(desc_m.group(1))
+        assert len(title) <= TITLE_MAX, f"{page.name} title {len(title)} chars (max {TITLE_MAX}): {title}"
+        assert len(desc) <= DESC_MAX, f"{page.name} description {len(desc)} chars (max {DESC_MAX}): {desc}"
+        assert title not in seen_titles, f"{page.name} duplicate title: {title}"
+        assert desc not in seen_descs, f"{page.name} duplicate description: {desc}"
+        seen_titles.add(title)
+        seen_descs.add(desc)
+        links = set(INTERNAL_LINK_RE.findall(text))
+        assert len(links) >= 2, f"{page.name} has fewer than 2 internal links: {links}"
+
+
+def test_every_kit_page_has_seo_essentials() -> None:
+    """Same bar as guides, applied to the 13 kit landing pages (build_kit_pages.py
+    has its own generator, so its own regression check)."""
+    import build_kit_pages
+
+    seen_titles, seen_descs = set(), set()
+    for slug, k in build_kit_pages.KITS.items():
+        text = build_kit_pages.page(slug, k)
+        title_m, desc_m, h1_m = TITLE_RE.search(text), DESC_RE.search(text), H1_RE.search(text)
+        assert title_m and title_m.group(1).strip(), f"{slug} missing <title>"
+        assert desc_m and desc_m.group(1).strip(), f"{slug} missing meta description"
+        assert h1_m and _unescape(h1_m.group(1)).strip(), f"{slug} missing real <h1>"
+        title, desc = _unescape(title_m.group(1)), _unescape(desc_m.group(1))
+        assert len(title) <= TITLE_MAX, f"{slug} title {len(title)} chars (max {TITLE_MAX}): {title}"
+        assert len(desc) <= DESC_MAX, f"{slug} description {len(desc)} chars (max {DESC_MAX}): {desc}"
+        assert title not in seen_titles, f"{slug} duplicate title: {title}"
+        assert desc not in seen_descs, f"{slug} duplicate description: {desc}"
+        seen_titles.add(title)
+        seen_descs.add(desc)
+        links = set(INTERNAL_LINK_RE.findall(text))
+        assert len(links) >= 2, f"{slug} has fewer than 2 internal links: {links}"
+
+
+def test_kit_page_offers_no_false_instock(built_site: Path) -> None:
+    """JSON-LD honesty: a kit with no live Gumroad slug must never claim an
+    ``offers`` block (that would be a false InStock signal to search/AI engines
+    for a product that cannot actually be bought — the bug cycle 006 fixed)."""
+    import build_kit_pages
+
+    for slug, k in build_kit_pages.KITS.items():
+        text = build_kit_pages.page(slug, k)
+        blocks = _ld_blocks(text)
+        product = next(b for b in blocks if b.get("@type") == "Product")
+        available = k[9] is not None  # gslug
+        if available:
+            assert "offers" in product, f"{slug} is available but has no Offer"
+        else:
+            assert "offers" not in product, f"{slug} has no product but claims an Offer"
 
 
 def test_build_writes_only_guides_and_sitemap(built_site: Path) -> None:

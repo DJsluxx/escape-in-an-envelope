@@ -130,6 +130,35 @@ footer{text-align:center;padding:30px 20px;opacity:.7;font-size:14px}
 
 AVAILABLE_COUNT = sum(1 for k in KITS.values() if k[9])  # kits with a live gumroad slug
 
+# The literal phrase a buyer types, not the flavor/story title (e.g. h1 uses "Dino
+# Escape: Operation Rexy", but nobody searches that — they search "dinosaur escape
+# room for kids"). Evidence per theme, cycle 007:
+#   - dino/space/spy/pirate/unicorn: seller-authored Etsy listing slugs already live
+#     on our own 5 listed kits use this exact "<theme> escape room ... printable ...
+#     kids" pattern (verified live URLs in KITS above).
+#   - Gumroad ground truth (cycle 006 VERA, live 2026-08-04): dino product title is
+#     literally "Dinosaur Escape Room for Kids - Printable Birthday Party Game (Ages
+#     6-8)" — the same pattern, confirmed live, not assumed.
+#   - superhero, halloween (spot-checked, cycle 007 WebSearch 2026-08-05): multiple
+#     independent competitors (Etsy listings, escape-kit.com, Think Tank Puzzles,
+#     MysteryLocks, My Party Games) sell against this exact phrase pattern today —
+#     D7 "competitors visibly selling" evidence for the remaining themes.
+SEARCH_THEME = {
+ "dino-6-8": "Dinosaur",
+ "space-5-6": "Space",
+ "spy-7-9": "Spy",
+ "pirate-6-8": "Pirate",
+ "unicorn-5-7": "Unicorn",
+ "superhero-6-9": "Superhero",
+ "princess-4-6": "Princess",
+ "mermaid-5-7": "Mermaid",
+ "jungle-safari-6-8": "Jungle Safari",
+ "ninja-7-9": "Ninja",
+ "halloween-6-9": "Halloween",
+ "christmas-5-8": "Christmas",
+ "easter-4-7": "Easter",
+}
+
 
 def page(slug, k):
     emoji,title,ages,players,mins,price,hook,puzzles,cert,gslug,season,etsy_url = k
@@ -139,8 +168,21 @@ def page(slug, k):
     # cannot actually be grabbed. Route straight to the kits that ARE buyable instead
     # of dead-ending the highest-intent seasonal search traffic on this page.
     available = gslug is not None
-    seo_title = f"{title} — Printable Escape Room for Kids Ages {ages} | Escape in an Envelope"
-    desc = f"{title}: a print-at-home escape room for kids ages {ages}. Six puzzles, zero prep, instant PDF download. {hook}"
+    theme = SEARCH_THEME[slug]
+    # Title/description rewritten cycle 007: the old template ran 81-96 char titles
+    # and 194-217 char descriptions on every one of these 13 pages (never tested,
+    # never caught) — both well past Google's ~60/~155 char display budget, so the
+    # query-relevant words got silently truncated out of every SERP snippet. New
+    # template front-loads the actual search phrase (see SEARCH_THEME) and fits.
+    seo_title = f"{theme} Escape Room for Kids Ages {ages} | Printable"
+    if available:
+        desc = (f"{theme} escape room for kids ages {ages} — print-at-home party game. "
+                f"Six puzzles, zero prep, instant PDF download.")
+    else:
+        # Cycle 006 rule: never imply a non-existent product is buyable. No "instant
+        # download" language here — matches the honest on-page copy for these 3 kits.
+        desc = (f"{theme} escape room for kids ages {ages} — a print-at-home party idea. "
+                f"Six puzzles, zero prep. Coming soon; browse the kits on sale now.")
     etsy_href = etsy_url or ETSY
     if available:
         gum_url = utm(f"{GUM}/l/{gslug}", "kit", slug)
@@ -178,7 +220,7 @@ def page(slug, k):
 <meta name="p:domain_verify" content="acbbe5c41ba31559d65bd39fffa9f24c">
 <title>{esc(seo_title)}</title>
 <meta name="description" content="{esc(desc)}">
-<meta name="keywords" content="{esc(slug.rsplit('-',2)[0])} escape room, printable escape room kids, {esc(slug.rsplit('-',2)[0])} party game, kids escape room ages {ages}, print at home party game, instant download">
+<meta name="keywords" content="{esc(theme.lower())} escape room, printable escape room kids, {esc(theme.lower())} party game, kids escape room ages {ages}, print at home party game, instant download">
 <link rel="canonical" href="{BASE}/kits/{slug}.html">
 <meta name="theme-color" content="#3d3a5c">
 <meta property="og:type" content="product"><meta property="og:title" content="{esc(title)} — Printable Kids Escape Room">

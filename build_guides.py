@@ -490,8 +490,8 @@ def guides_index(articles):
     return f"""<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 {DOMAIN_VERIFY}
-<title>Free Kids Party Games &amp; Escape Room Guides | Escape in an Envelope</title>
-<meta name="description" content="Free, practical party guides: dinosaur, unicorn, space, pirate, superhero, spy, princess, mermaid, jungle safari &amp; ninja party games, plus how to make a kids escape room at home — with a free printable.">
+<title>Free Kids Party Games &amp; Escape Room Guides</title>
+<meta name="description" content="Free party guides for kids ages 4-9: dinosaur, unicorn, space, pirate, superhero and more party games, plus how to build an escape room at home.">
 <link rel="canonical" href="{BASE}/guides/index.html">
 <meta name="theme-color" content="#3d3a5c">
 <meta property="og:type" content="website"><meta property="og:title" content="Free Kids Party Games &amp; Escape Room Guides">
