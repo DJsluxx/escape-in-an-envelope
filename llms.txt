@@ -2,8 +2,8 @@
 
 > Escape In An Envelope makes instant-download, print-at-home escape room games for
 > children's birthday parties, classrooms, and rainy afternoons. Each kit is a complete
-> game — 6 themed puzzles, zone/station signs, a host guide, and an answer key — designed
-> for zero prep beyond printing and hiding the clues. No app, no locks, no props required.
+> game — 6 themed puzzles, zone/station signs, a host guide, and an answer key. Setup is
+> about 15 minutes: print, cut, and hide the clue cards. No app, no locks, no batteries.
 > Themes span dinosaur, space, spy, pirate, unicorn, superhero, princess, mermaid, jungle
 > safari, ninja, plus seasonal Halloween, Christmas, and Easter. Every kit is age-banded
 > (ages 4–9) so the puzzle difficulty fits the child. Priced $9–$10, instant PDF download.
@@ -29,7 +29,7 @@ a parent searching for a particular birthday theme and child's age gets a game t
 
 ## Escape room kits (age-banded, instant download)
 
-- [Dinosaur Escape (ages 6–8, $9)](https://djsluxx.github.io/escape-in-an-envelope/kits/dino-6-8.html): Dino-dig rescue mission; 6 puzzles, host guide, zero prep. Best for dinosaur-theme birthdays, ages 6–8.
+- [Dinosaur Escape (ages 6–8, $9)](https://djsluxx.github.io/escape-in-an-envelope/kits/dino-6-8.html): Dino-dig rescue mission; 6 puzzles, host guide, about 15 min setup. Best for dinosaur-theme birthdays, ages 6–8.
 - [Space Station Escape (ages 5–6, $9)](https://djsluxx.github.io/escape-in-an-envelope/kits/space-5-6.html): Astronaut mission with simpler puzzles for younger kids. Best for space birthdays, ages 5–6.
 - [Spy HQ Lockdown (ages 7–9, $10)](https://djsluxx.github.io/escape-in-an-envelope/kits/spy-7-9.html): Secret-agent code-breaking; the trickiest set, for older kids. Best for spy/detective birthdays, ages 7–9.
 - [Pirate Treasure Escape (ages 6–8, $9)](https://djsluxx.github.io/escape-in-an-envelope/kits/pirate-6-8.html): Map-and-treasure hunt. Best for pirate birthdays, ages 6–8.

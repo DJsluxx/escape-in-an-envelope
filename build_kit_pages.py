@@ -177,12 +177,12 @@ def page(slug, k):
     seo_title = f"{theme} Escape Room for Kids Ages {ages} | Printable"
     if available:
         desc = (f"{theme} escape room for kids ages {ages} — print-at-home party game. "
-                f"Six puzzles, zero prep, instant PDF download.")
+                f"Six puzzles, about 15 min setup, instant PDF download.")
     else:
         # Cycle 006 rule: never imply a non-existent product is buyable. No "instant
         # download" language here — matches the honest on-page copy for these 3 kits.
         desc = (f"{theme} escape room for kids ages {ages} — a print-at-home party idea. "
-                f"Six puzzles, zero prep. Coming soon; browse the kits on sale now.")
+                f"Six puzzles, about 15 min setup. Coming soon; browse the kits on sale now.")
     etsy_href = etsy_url or ETSY
     if available:
         gum_url = utm(f"{GUM}/l/{gslug}", "kit", slug)
@@ -258,7 +258,7 @@ def page(slug, k):
 <div class="cta" style="margin-top:22px">{buy_gum}{etsy_btn}</div></section>
 <section><h2>Questions</h2>
 <details open><summary>What do I get?</summary><p>An instant PDF: 6 clue cards, 7 zone signs, a code card and finale keypad, {esc(cert)} certificates, and a full host guide with the answer key. Nothing is shipped — you print at home.</p></details>
-<details><summary>Do I need anything special?</summary><p>Just a home printer (colour recommended) and some tape. No app, no props, no batteries, zero prep.</p></details>
+<details><summary>Do I need anything special?</summary><p>Just a colour printer, scissors, and tape — print, cut, and hide the clue cards in about 15 minutes. No app, no batteries.</p></details>
 <details><summary>Is it right for ages {ages}?</summary><p>Yes — every puzzle was built and tested to solve at this age band. There's a host guide with hints if anyone gets stuck.</p></details>
 <details><summary>Can I reuse it?</summary><p>Absolutely — print it again for the next party, sleepover, rainy day, or classroom.</p></details></section>
 <section><h2>More kids escape rooms</h2><div class="more">{others}</div>

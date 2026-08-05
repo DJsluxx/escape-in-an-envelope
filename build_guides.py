@@ -261,7 +261,7 @@ def free_upsell_block():
     off-theme products, which reads as unfocused right after a themed ask."""
     return f"""<div class="funnel" style="border-color:var(--band)"><div class="e">🎁</div>
 <h3>Loved the free mini? Skip the prep next time</h3>
-<p>The full themed kits turn this into a zero-prep party: six illustrated puzzles that chain into a clue trail, seven printable zone signs, a code-and-keypad finale, name certificates and a full host guide — one instant-download PDF, about $9. Pick the theme your child already loves.</p>
+<p>The full themed kits turn this into a bigger party in about 15 minutes of setup: six illustrated puzzles that chain into a clue trail, seven printable zone signs, a code-and-keypad finale, name certificates and a full host guide — one instant-download PDF, about $9. Pick the theme your child already loves.</p>
 <div class="cta"><a class="btn gum" href="../index.html">Browse the themed kits — from $9 →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
 <p class="price">Pirate · dino · space · spy · unicorn · mermaid &amp; more · instant PDF</p></div>"""
 
@@ -509,7 +509,7 @@ def guides_index(articles):
 <p class="hook">Real, usable party plans — games, food, decorations and timings — plus a free printable escape room you can run today.</p>
 <div class="guidenav" style="margin-top:22px">{cards}</div></header>
 <div class="wrap"><section style="padding-top:26px"><h2>Ready-made escape room kits</h2>
-<p class="hook" style="margin:0 0 14px">Love the ideas but short on time? Every themed kit is an instant-download, print-at-home escape room — zero prep.</p>
+<p class="hook" style="margin:0 0 14px">Love the ideas but short on time? Every themed kit is an instant-download, print-at-home escape room — about 15 minutes to set up.</p>
 <div class="cta"><a class="btn gum" href="../index.html">See all 13 kits →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div></section></div>
 <footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="{ETSY}">Etsy</a> · <a href="{utm(GUM, "index", "guides-index")}">Gumroad</a></footer>
 </body></html>"""

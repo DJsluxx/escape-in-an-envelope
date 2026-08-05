@@ -419,6 +419,51 @@ def test_kit_page_offers_no_false_instock(built_site: Path) -> None:
             assert "offers" not in product, f"{slug} has no product but claims an Offer"
 
 
+BANNED_CLAIMS_RE = re.compile(
+    r"zero prep|no props|no special supplies|kids run it themselves", re.IGNORECASE
+)
+
+
+def test_no_unsupportable_claims_in_guides(built_site: Path) -> None:
+    """Honesty regression (cycle 007, ECHO). These claims are false on the kits'
+    own terms: host_guide.md says ~15 minutes of setup (print, cut, hide the
+    clues), and the kit is host-run, not self-running. WARDEN ruled them
+    UNSUPPORTABLE for the Pinterest pins (cycles/006-warden-pinterest.md,
+    condition C4) but nobody had applied the same ruling to the website — that
+    was the defect this test exists to catch if it ever comes back."""
+    for page in (built_site / "guides").glob("*.html"):
+        m = BANNED_CLAIMS_RE.search(page.read_text(encoding="utf-8"))
+        assert not m, f"{page.name} contains banned claim: {m.group(0)!r}"
+
+
+def test_no_unsupportable_claims_in_kit_pages() -> None:
+    import build_kit_pages
+
+    for slug, k in build_kit_pages.KITS.items():
+        text = build_kit_pages.page(slug, k)
+        m = BANNED_CLAIMS_RE.search(text)
+        assert not m, f"kit {slug} contains banned claim: {m.group(0)!r}"
+
+
+def test_no_unsupportable_claims_in_static_pages() -> None:
+    """index.html and llms.txt are hand-authored with no generator (the source
+    file IS the live output) — scan the live files directly rather than a build
+    artifact."""
+    for name in ("index.html", "llms.txt"):
+        text = (REPO / name).read_text(encoding="utf-8")
+        m = BANNED_CLAIMS_RE.search(text)
+        assert not m, f"{name} contains banned claim: {m.group(0)!r}"
+
+
+def test_no_unsupportable_claims_in_guides_content_source() -> None:
+    """Defense in depth: scan the raw JSON data source too, so a banned claim
+    added to guides_content.json fails the suite even before it's rendered into
+    a page."""
+    text = (REPO / "guides_content.json").read_text(encoding="utf-8")
+    m = BANNED_CLAIMS_RE.search(text)
+    assert not m, f"guides_content.json contains banned claim: {m.group(0)!r}"
+
+
 def test_build_writes_only_guides_and_sitemap(built_site: Path) -> None:
     """The builder must never create verification/key files."""
     top_level = {p.name for p in built_site.iterdir()}
