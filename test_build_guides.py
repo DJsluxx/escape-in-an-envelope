@@ -10,6 +10,7 @@ Builds the whole site into a temp dir (never touching the live files) and checks
 from __future__ import annotations
 
 import html as html_mod
+import json
 import re
 import shutil
 from pathlib import Path
@@ -420,19 +421,50 @@ def test_kit_page_offers_no_false_instock(built_site: Path) -> None:
 
 
 BANNED_CLAIMS_RE = re.compile(
-    r"zero prep|no props|no special supplies|kids run it themselves", re.IGNORECASE
+    r"zero prep|no props|no special supplies|kids run it themselves|\bno[- ]prep\b",
+    re.IGNORECASE,
 )
+
+# Cycle 008 (WARDEN addendum, RULING A) found index.html:178 carrying the bare
+# claim "no prep" about OUR OWN free printable, live on the homepage, and
+# proved this suite did not catch it: the regex above previously matched only
+# "zero prep", not "no prep" (with or without a hyphen). That gap is now
+# closed by the `\bno[- ]prep\b` alternative.
+#
+# One guide legitimately uses that same phrase: last-minute-party-ideas-for-kids
+# describes GENERIC party games (Freeze Dance, Sleeping Lions, ...) as
+# "no-prep games" — that is not a claim about our kits, and WARDEN explicitly
+# CLEARED those hits in the same ruling, warning not to over-correct them
+# away. The exemption below is scoped to that one slug only. The guard
+# function keeps the exemption honest: if that page ever stops being about
+# generic games, the guard fails loudly instead of silently protecting
+# whatever replaces it.
+GENERIC_GAMES_EXEMPT_SLUG = "last-minute-party-ideas-for-kids"
+
+
+def _assert_exemption_still_about_generic_games(text: str, where: str) -> None:
+    assert "Freeze Dance" in text, (
+        f"{where} no longer matches the generic-party-games content WARDEN "
+        "cleared (cycle 008 addendum) — re-verify before keeping the "
+        "'no prep' exemption for this slug"
+    )
 
 
 def test_no_unsupportable_claims_in_guides(built_site: Path) -> None:
-    """Honesty regression (cycle 007, ECHO). These claims are false on the kits'
-    own terms: host_guide.md says ~15 minutes of setup (print, cut, hide the
-    clues), and the kit is host-run, not self-running. WARDEN ruled them
-    UNSUPPORTABLE for the Pinterest pins (cycles/006-warden-pinterest.md,
-    condition C4) but nobody had applied the same ruling to the website — that
-    was the defect this test exists to catch if it ever comes back."""
+    """Honesty regression (cycle 007, ECHO; tightened cycle 008 after WARDEN
+    found the bare "no prep" gap live on index.html). These claims are false
+    on the kits' own terms: host_guide.md says ~15 minutes of setup (print,
+    cut, hide the clues), and the kit is host-run, not self-running. WARDEN
+    ruled them UNSUPPORTABLE for the Pinterest pins
+    (cycles/006-warden-pinterest.md, condition C4); cycle 008 re-ruled them
+    unsupportable on the website too, everywhere except the one exempted
+    slug above."""
     for page in (built_site / "guides").glob("*.html"):
-        m = BANNED_CLAIMS_RE.search(page.read_text(encoding="utf-8"))
+        text = page.read_text(encoding="utf-8")
+        if page.stem == GENERIC_GAMES_EXEMPT_SLUG:
+            _assert_exemption_still_about_generic_games(text, page.name)
+            continue
+        m = BANNED_CLAIMS_RE.search(text)
         assert not m, f"{page.name} contains banned claim: {m.group(0)!r}"
 
 
@@ -447,8 +479,10 @@ def test_no_unsupportable_claims_in_kit_pages() -> None:
 
 def test_no_unsupportable_claims_in_static_pages() -> None:
     """index.html and llms.txt are hand-authored with no generator (the source
-    file IS the live output) — scan the live files directly rather than a build
-    artifact."""
+    file IS the live output) — scan the live files directly rather than a
+    build artifact. This is the exact test that would have caught
+    index.html:178 ("Run it today · no prep") had the regex already covered
+    the bare "no prep" phrasing — cycle 008 closed that gap."""
     for name in ("index.html", "llms.txt"):
         text = (REPO / name).read_text(encoding="utf-8")
         m = BANNED_CLAIMS_RE.search(text)
@@ -457,11 +491,18 @@ def test_no_unsupportable_claims_in_static_pages() -> None:
 
 def test_no_unsupportable_claims_in_guides_content_source() -> None:
     """Defense in depth: scan the raw JSON data source too, so a banned claim
-    added to guides_content.json fails the suite even before it's rendered into
-    a page."""
-    text = (REPO / "guides_content.json").read_text(encoding="utf-8")
-    m = BANNED_CLAIMS_RE.search(text)
-    assert not m, f"guides_content.json contains banned claim: {m.group(0)!r}"
+    added to guides_content.json fails the suite even before it's rendered
+    into a page. Scoped per-article (not one whole-file regex) so the single
+    WARDEN-cleared exemption above can be skipped without blinding the check
+    for every other article."""
+    content = json.loads((REPO / "guides_content.json").read_text(encoding="utf-8"))
+    for art in content["articles"]:
+        text = json.dumps(art)
+        if art["slug"] == GENERIC_GAMES_EXEMPT_SLUG:
+            _assert_exemption_still_about_generic_games(text, f"guides_content.json[{art['slug']}]")
+            continue
+        m = BANNED_CLAIMS_RE.search(text)
+        assert not m, f"guides_content.json[{art['slug']}] contains banned claim: {m.group(0)!r}"
 
 
 def test_build_writes_only_guides_and_sitemap(built_site: Path) -> None:
