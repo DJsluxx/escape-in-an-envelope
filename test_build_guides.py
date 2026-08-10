@@ -505,6 +505,75 @@ def test_no_unsupportable_claims_in_guides_content_source() -> None:
         assert not m, f"guides_content.json[{art['slug']}] contains banned claim: {m.group(0)!r}"
 
 
+PIN_DEST_DENY_LIST = (
+    "zero prep", "no prep", "no-prep", "zero-prep", "skip the prep", "prep-free",
+    "no preparation", "without any prep", "no special supplies", "no supplies needed",
+    "prints on one page", "one page to print", "just one page", "single page",
+    "$9", "from $9", "~$9 each", "about $9",
+    "shop on etsy →", "see all 13 escape kits →",
+    "browse the themed kits — from $9 →",
+    "guaranteed", "money-back", "refund",
+    "free forever", "no catch", "no strings",
+    "subscribe", "join the list", "enter your email", "sign up",
+    "<form", 'type="email"',
+)
+
+
+def test_pin_destination_is_purchase_free(built_site: Path) -> None:
+    """Regression for cycle 009 (WARDEN ruling, vibe-org/cycles/009-warden-
+    destination.md): the Pinterest pin destination page must never carry a
+    store link, a price, or a purchase CTA — a purchase anywhere in its
+    journey re-trips WARDEN's standing veto. Fails loudly if Etsy/Gumroad
+    hrefs, a kit-product deep link, a styled store button, or any of
+    WARDEN's §6 deny-list strings ever return to this one page."""
+    text = (built_site / "guides" / f"{build_guides.FREE_SLUG}.html").read_text(encoding="utf-8")
+    low = text.lower()
+
+    assert "etsy.com" not in low, "pin destination still links Etsy"
+    assert "gumroad.com" not in low, "pin destination still links Gumroad"
+    assert "../kits/" not in text, "pin destination still deep-links a kit product page"
+    assert 'class="btn gum"' not in text and 'class="btn etsy"' not in text, \
+        "pin destination still carries a styled store CTA button"
+    # The header brand logo (site nav chrome, identical on every page) is the
+    # only permitted "../index.html" href. Anything more is a reintroduced CTA.
+    assert text.count('href="../index.html"') == 1, \
+        "pin destination carries more than the header nav link to the kit index"
+
+    for phrase in PIN_DEST_DENY_LIST:
+        assert phrase not in low, f"pin destination contains banned string: {phrase!r}"
+
+
+def test_pin_destination_page_count_matches_real_pdf(built_site: Path) -> None:
+    """Regression for the false 'prints on one page' claim WARDEN found live:
+    the page count stated on the page must equal the PDF's own /Count, read
+    fresh from the file (not a hard-coded literal) — so a future edit to the
+    PDF that changes its page count fails this test instead of silently
+    drifting out of sync with the copy shown to readers."""
+    real_pages = build_guides.free_pdf_page_count()
+    assert real_pages > 0
+    text = (built_site / "guides" / f"{build_guides.FREE_SLUG}.html").read_text(encoding="utf-8")
+    assert f"{real_pages} pages ·" in text, \
+        f"pin destination doesn't state the real page count ({real_pages})"
+    assert "one page" not in text.lower(), "pin destination still claims a false page count"
+
+
+def test_other_guides_keep_their_funnel(built_site: Path) -> None:
+    """Guard against site-wide overreach: cycle 009 de-commercialises ONLY the
+    Pinterest pin destination page (guides_content.json's `funnel.purchase_free`
+    flag, scoped to that one slug). Every OTHER guide must still carry its
+    funnel CTA — if this ever drops to zero across the site, the purchase-free
+    behaviour leaked out of its one guide into the shared template."""
+    articles = build_guides.load_articles()
+    checked = 0
+    for art in articles:
+        if art["slug"] == build_guides.FREE_SLUG:
+            continue
+        text = (built_site / "guides" / f"{art['slug']}.html").read_text(encoding="utf-8")
+        assert 'class="btn gum"' in text, f"{art['slug']} lost its funnel CTA"
+        checked += 1
+    assert checked >= 20, f"expected ~25 other guides with a funnel, checked {checked}"
+
+
 def test_build_writes_only_guides_and_sitemap(built_site: Path) -> None:
     """The builder must never create verification/key files."""
     top_level = {p.name for p in built_site.iterdir()}

@@ -129,6 +129,34 @@ def css_for(theme_overrides=None):
     return "\n" + root + CSS_BODY
 
 
+def _purchase_free(art):
+    """True when this guide's ``funnel`` override sets ``purchase_free: true`` —
+    a self-documenting per-guide flag (set in guides_content.json, never a
+    hand-coded slug check here) that strips every store link, price and CTA
+    from the page's funnel/upsell/kit-chip blocks. Used for pages that must
+    stay a purchase-free journey end to end (e.g. a Pinterest pin destination).
+    See WARDEN cycle-009 ruling, vibe-org/cycles/009-warden-destination.md."""
+    return bool((art.get("funnel") or {}).get("purchase_free"))
+
+
+def free_pdf_page_count():
+    """Read the true page count straight out of free/mini-escape-room.pdf's own
+    /Pages object, so any on-page claim about page count is derived from the
+    actual artifact and can never silently drift out of sync with it (cycle 009
+    caught the page copy claiming "one page" for a file that is really four).
+    /Count and /Type can appear in either order inside the dict, so this scans
+    a byte window around the /Type /Pages marker rather than assuming order."""
+    data = (ROOT / "free" / "mini-escape-room.pdf").read_bytes()
+    type_pages = re.search(rb"/Type\s*/Pages", data)
+    if not type_pages:
+        raise SystemExit("ABORT: could not find /Type /Pages in free/mini-escape-room.pdf")
+    window = data[max(0, type_pages.start() - 200):type_pages.end() + 50]
+    count = re.search(rb"/Count\s+(\d+)", window)
+    if not count:
+        raise SystemExit("ABORT: could not read /Count near /Type /Pages in free/mini-escape-room.pdf")
+    return int(count.group(1))
+
+
 def linkify_store_mentions(escaped_text, art, medium="guide"):
     """Turn our own plain-text storefront mentions inside already-escaped copy
     into tracked, clickable links, instead of leaving them as buried dead text
@@ -186,8 +214,13 @@ def render_faq(faq):
 
 
 def funnel_block(art):
-    funnel_kit = art.get("kit")
     over = art.get("funnel") or {}
+    if over.get("purchase_free"):
+        # No store link, no price, no buy verb — this guide must stay a
+        # purchase-free journey end to end. See _purchase_free() docstring.
+        note = over.get("purchase_free_note", "")
+        return f'<p class="price" style="text-align:center;margin:26px 0">{esc(note)}</p>'
+    funnel_kit = art.get("kit")
     campaign = art["slug"]
     if funnel_kit and funnel_kit in KITS:
         emoji, title, gslug, ages, price, etsy_url = KITS[funnel_kit]
@@ -226,6 +259,8 @@ def inline_cta_block(art):
     Gumroad's referrer data separates mid-article conversions from the bottom funnel;
     pillar/head-term guides point to the on-brand escape-only kit index (no Gumroad
     profile link, matching the bottom funnel's routing)."""
+    if _purchase_free(art):
+        return ""  # purchase-free guides never get a mid-article buy nudge
     funnel_kit = art.get("kit")
     over = art.get("funnel") or {}
     if funnel_kit and funnel_kit in KITS:
@@ -243,12 +278,12 @@ def inline_cta_block(art):
             '<a class="btn gum" href="../index.html">Browse the 13 escape kits →</a></div>')
 
 
-def free_download_block():
+def free_download_block(page_count):
     return f"""<div class="funnel" style="border-color:var(--accent)"><div class="e">🗝️</div>
 <h3>Grab the free printable pack (PDF)</h3>
-<p>The complete 3-puzzle mini escape room below, ready to print — clue cards, the setup guide, and a "You Escaped!" certificate. No email required.</p>
-<div class="cta"><a class="btn free" href="{FREE_PDF}" rel="noopener" download>⬇ Download the free printable</a></div>
-<p class="price">One page to print · set up in 5 minutes · household items only</p></div>"""
+<p>The complete 3-puzzle mini escape room below, ready to print — clue cards, the setup guide, and a "You Escaped!" certificate. No email required, no account, nothing to pay.</p>
+<div class="cta"><a class="btn free" href="{FREE_PDF}" rel="noopener" download>⬇ Download the free printable (PDF)</a></div>
+<p class="price">{page_count} pages · US Letter · instant download · no email required</p></div>"""
 
 
 def free_upsell_block():
@@ -351,12 +386,15 @@ def guide_page(art, articles, pz=None):
         f'<a class="chip" href="../kits/{s}.html">{KITS[s][0]} {esc(KITS[s][1])}</a>' for s in kit_chip_slugs
     )
 
+    purchase_free = _purchase_free(art)
     body = []
     if is_free:
-        body.append(free_download_block())
+        body.append(free_download_block(free_pdf_page_count()))
         # Peak-intent CTA: right after the free download is the warmest moment on
         # this page — a reader who bounces here never reaches the bottom funnel.
-        body.append(free_upsell_block())
+        # Skipped entirely on a purchase-free guide (no store CTA anywhere).
+        if not purchase_free:
+            body.append(free_upsell_block())
     # Answer-first lead: a short, direct answer to the guide's core query rendered
     # at the very top of the article, so AI answer engines (and skimming parents)
     # can extract/quote the answer without wading through the essay opening.
@@ -376,8 +414,11 @@ def guide_page(art, articles, pz=None):
     body.append(funnel_block(art))
     body.append(render_faq(art["faq"]))
     body.append(f'<section style="padding-top:24px"><h2>More free party guides</h2><div class="more">{other_guides}</div></section>')
-    body.append(f'<section style="padding-top:6px"><h2>Popular printable escape rooms</h2><div class="more">{kit_chips}</div>'
-                f'<p style="text-align:center;margin-top:16px"><a href="../index.html">← See all 13 kits</a></p></section>')
+    # Kit-page chips deep-link straight to kits/*.html, each of which is two
+    # clicks from Gumroad checkout — omit them entirely on a purchase-free guide.
+    if not purchase_free:
+        body.append(f'<section style="padding-top:6px"><h2>Popular printable escape rooms</h2><div class="more">{kit_chips}</div>'
+                    f'<p style="text-align:center;margin-top:16px"><a href="../index.html">← See all 13 kits</a></p></section>')
     body_html = "\n".join(body)
 
     ld_description = art.get("ld_description", art["meta_description"])
@@ -411,6 +452,13 @@ def guide_page(art, articles, pz=None):
     theme_color = art.get("theme_color", (theme or DEFAULT_THEME).get("primary", DEFAULT_THEME["primary"]))
     crumb = art.get("crumb", art["h1"][:40])
     img_alt = art.get("img_alt", art["h1"])
+    # Footer keeps only same-site, non-commercial navigation on a purchase-free
+    # guide — no kit index link, no Etsy link.
+    footer_html = (
+        'Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="index.html">Party guides</a>'
+        if purchase_free else
+        f'Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="index.html">Party guides</a> · <a href="../index.html">All kits</a> · <a href="{ETSY}">Etsy</a>'
+    )
     return f"""<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 {DOMAIN_VERIFY}
@@ -440,7 +488,7 @@ def guide_page(art, articles, pz=None):
 <div class="wrap">
 {body_html}
 </div>
-<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="index.html">Party guides</a> · <a href="../index.html">All kits</a> · <a href="{ETSY}">Etsy</a></footer>
+<footer>{footer_html}</footer>
 </body></html>"""
 
 

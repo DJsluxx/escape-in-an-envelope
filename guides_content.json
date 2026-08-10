@@ -17,7 +17,7 @@
    "emoji": "🗝️",
    "h1": "Free Printable Escape Room for Kids: A Complete Mini Adventure You Can Run Today",
    "hook": "You don't need a fancy budget or a spare weekend to give kids that giddy \"we cracked the code!\" moment. Here's a complete, genuinely usable free escape room you can set up in five minutes with a pen, a box, and this page — plus everything you need to run it smoothly.",
-   "answer": "Yes - you can run a complete escape room for kids with just a free printable, a pen, and a few household items. The 3-puzzle mini escape room below prints on one page, sets up in five minutes, and ends with a code that unlocks a prize. No email required.",
+   "answer": "Yes - you can run a complete escape room for kids with just a free printable, a pen, and a few household items. The 3-puzzle mini escape room below prints on four US Letter pages, sets up in about five minutes, and ends with a code that unlocks a prize. No email required.",
    "sections": [
     {
      "h2": "🎒 What You Need (Spoiler: Almost Nothing)",
@@ -80,8 +80,8 @@
      "h2": "🎁 Want the Full, 15-Minute-Setup Version?",
      "paragraphs": [
       "Making your own mini escape is genuinely fun, and for a low-key afternoon it is all you need. But if you are hosting a birthday, juggling ten excited kids, and don't have an evening to draw clue cards, that is exactly what our themed kits are for — and I would rather tell you honestly where each one fits.",
-      "Each Escape in an Envelope kit is a single instant-download PDF (about $9): six illustrated puzzles that chain into a clue trail, seven printable zone signs so it works in any home, a code-and-keypad finale card, name certificates, and a full host guide with the complete answer key — so you print, cut, hide, and host in about 15 minutes of setup. Every kit is age-banded and solvability-checked, so the puzzles actually work for the age on the label.",
-      "Pick the theme your child already loves — pirate treasure, dinosaurs, space station, secret-agent spy HQ, unicorns, mermaids and more — at salama62.gumroad.com or our Etsy shop. The free mini escape above is yours to keep either way; the kit is simply the done-for-you shortcut for when you want the 'wow' without the work."
+      "Each Escape in an Envelope kit is a single instant-download PDF: six illustrated puzzles that chain into a clue trail, seven printable zone signs so it works in any home, a code-and-keypad finale card, name certificates, and a full host guide with the complete answer key — so you print, cut, hide, and host in about 15 minutes of setup. Every kit is age-banded and solvability-checked, so the puzzles actually work for the age on the label.",
+      "Pick the theme your child already loves — pirate treasure, dinosaurs, space station, secret-agent spy HQ, unicorns, mermaids and more. The free mini escape above is yours to keep either way; the kit is simply the done-for-you shortcut for when you want the 'wow' without the work."
      ]
     }
    ],
@@ -110,6 +110,10 @@
    "funnel_pitch": "Loved running the free mini? The full Escape in an Envelope kits turn it into a proper party: six illustrated puzzles that chain into a clue trail, seven printable zone signs, a code-and-keypad finale, name certificates, and a host guide with the complete answer key — all in one print-at-home PDF, about $9, instant download. Every kit is age-banded and solvability-checked, in themes kids adore (pirate, dino, space, spy, unicorn, mermaid and more) at salama62.gumroad.com or our Etsy shop. About 15 minutes to set up, reusable, and the free plan above stays yours no matter what.",
    "nav_label": "🗝️ Free Printable Escape Room",
    "kit": null,
+   "funnel": {
+    "purchase_free": true,
+    "purchase_free_note": "Escape in an Envelope also makes 13 full themed escape rooms — pirate, dino, space, spy, unicorn, mermaid and more, for ages 4–9. Have a look around the kit index whenever you like."
+   },
    "og_image": "https://djsluxx.github.io/escape-in-an-envelope/pins/free-printable-pin.png"
   },
   {
