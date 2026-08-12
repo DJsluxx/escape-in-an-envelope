@@ -299,6 +299,7 @@ footer{border-top:1px solid var(--band);margin-top:40px;padding:20px;text-align:
       +'<p>Line up your three numbers — Clue 1, then Clue 2, then Clue 3 — and write them here. Then count down together and open the vault!</p>'
       +'<div class="keypad"><span class="digitbox">&nbsp;</span><span class="digitbox">&nbsp;</span><span class="digitbox">&nbsp;</span></div>'
       +'<p style="text-align:center;margin-top:18px">🏅 This certifies that <strong>'+esc(name)+'</strong> cracked the code and is now an OFFICIAL '+T.label.toUpperCase()+' ESCAPE CHAMPION!</p>'
+      +'<p style="text-align:center;margin-top:22px;font-size:.8rem;color:#777;border-top:1px solid #e7e0cf;padding-top:12px">🔐✉️ Made free at <strong>escape-in-an-envelope</strong> · djsluxx.github.io/escape-in-an-envelope · full themed party kits inside</p>'
     +'</div>'
 
     +'<div class="cta noprint"><button class="btn print" onclick="window.print()">🖨️ Print these pages</button><button class="btn go" style="width:auto" onclick="window.scrollTo(0,0)">↺ Change details</button></div>';
@@ -306,8 +307,14 @@ footer{border-top:1px solid var(--band);margin-top:40px;padding:20px;text-align:
     var out=document.getElementById('out');
     out.innerHTML=html;
     out.classList.remove('hide');
-    // theme-specific gumroad deep link where a matching kit exists
-    var kitMap={pirate:"pirate-6-8",space:"space-5-6",dino:"dino-6-8",jungle:"jungle-safari-6-8",unicorn:"mermaid-5-7"};
+    // Personalise the after-print CTA to the exact theme just played (highest-intent moment).
+    // Every theme has an honest matching kit page — deep-link straight to it.
+    var kitMap={spy:"spy-7-9",pirate:"pirate-6-8",space:"space-5-6",dino:"dino-6-8",unicorn:"unicorn-5-7",jungle:"jungle-safari-6-8",superhero:"superhero-6-9"};
+    var cta=document.getElementById('ctaGum');
+    if(cta && kitMap[tk]){
+      cta.setAttribute('href','../kits/'+kitMap[tk]+'.html');
+      cta.textContent='See the full '+T.em+' '+T.label+' kit →';
+    }
     document.getElementById('afterprint').style.display='block';
     document.getElementById('out').scrollIntoView({behavior:'smooth'});
   }
