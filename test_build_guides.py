@@ -36,6 +36,9 @@ def make_site_skeleton(root: Path) -> None:
     (root / "kits").mkdir(parents=True, exist_ok=True)
     for kit in (REPO / "kits").glob("*.html"):
         (root / "kits" / kit.name).touch()
+    (root / "free").mkdir(parents=True, exist_ok=True)
+    for free in (REPO / "free").glob("*.html"):
+        (root / "free" / free.name).touch()
     shutil.copy(REPO / "sitemap.xml", root / "sitemap.xml")
 
 
@@ -577,7 +580,7 @@ def test_other_guides_keep_their_funnel(built_site: Path) -> None:
 def test_build_writes_only_guides_and_sitemap(built_site: Path) -> None:
     """The builder must never create verification/key files."""
     top_level = {p.name for p in built_site.iterdir()}
-    assert top_level == {"guides", "kits", "sitemap.xml"}
+    assert top_level == {"guides", "kits", "free", "sitemap.xml"}
     for forbidden in ("googlece5528dcc695b197.html", ".indexnow_key",
                       "586b557f6de25d530c55390b156f265f.txt"):
         assert not (built_site / forbidden).exists()

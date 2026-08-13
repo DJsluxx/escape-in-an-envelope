@@ -603,12 +603,19 @@ def build_sitemap(site_root, guide_order):
     guide_slugs = [p.stem for p in guide_files if p.name != "index.html"]
     kit_dir = site_root / "kits"
     kit_slugs = [p.stem for p in sorted(kit_dir.glob("*.html"))] if kit_dir.exists() else []
+    # Free tool pages (e.g. the escape-room generator) live outside the guides/kits
+    # dirs but are high-value, indexed URLs — enumerate them so a sitemap rebuild
+    # never silently drops them (they'd otherwise trip the superset guard below).
+    free_dir = site_root / "free"
+    free_slugs = [p.stem for p in sorted(free_dir.glob("*.html"))] if free_dir.exists() else []
 
     # (url, priority, source file the <lastmod> is read from)
     entries = [(f"{BASE}/", "1.0", site_root / "index.html")]
     entries += [(f"{BASE}/guides/index.html", "0.9", site_root / "guides" / "index.html")]
     entries += [(f"{BASE}/guides/{s}.html", "0.9", site_root / "guides" / f"{s}.html")
                 for s in _ordered_slugs(guide_slugs, guide_order)]
+    entries += [(f"{BASE}/free/{s}.html", "0.9", free_dir / f"{s}.html")
+                for s in sorted(free_slugs)]
     entries += [(f"{BASE}/kits/{s}.html", "0.8", kit_dir / f"{s}.html")
                 for s in _ordered_slugs(kit_slugs, list(KITS))]
 
