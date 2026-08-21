@@ -80,15 +80,15 @@ KITS = {
  "halloween-6-9": ("🎃","Monster Mansion Escape","6-9","3-8","30-45","9",
    "Count Snackula has hidden all the Halloween candy — monster hunters, rescue the treats!",
    ["Count the candy","Sort treats from tricks","Escape the ghosts","Reveal a hidden colour","Crack the monster code","Spot the differences"],
-   "Junior Monster Hunter",None,"Halloween",None),
+   "Junior Monster Hunter","rkuod","Halloween",None),
  "christmas-5-8": ("🎄","Santa's Workshop Escape","5-8","3-8","30-45","9",
    "The sleigh code is scrambled and Santa can't take off — little elves, get Christmas back on track!",
    ["Count the presents","Sort naughty from nice","Cross the icy path","Reveal a hidden colour","Crack the elf code","Spot the differences"],
-   "Junior Elf",None,"Christmas",None),
+   "Junior Elf","vyvab","Christmas",None),
  "easter-4-7": ("🐰","Easter Bunny's Egg Hunt Escape","4-7","3-8","20-35","9",
    "Hopscotch the Easter Bunny hid the golden egg — egg hunters, find it before the picnic!",
    ["Count the pink eggs","Sort yummy from yucky","Hop past the puddles","Reveal a hidden colour","Crack the bunny code","Spot the differences"],
-   "Junior Egg Hunter",None,"Easter",None),
+   "Junior Egg Hunter","meheq","Easter",None),
 }
 
 CSS = """
