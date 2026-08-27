@@ -45,10 +45,15 @@ def utm(url, medium, campaign):
     return f"{url}{sep}utm_source={UTM_SOURCE}&utm_medium={medium}&utm_campaign={campaign}"
 
 
+# The 10-room Etsy BUNDLE (id 4539529064, $29): pirate/spy/space/dino + the six
+# bonus kits added cycle 030. For kits with no individual Etsy listing but present
+# in the bundle, the Etsy CTA points here (honest label handled in funnel_block).
+ETSY_BUNDLE = "https://www.etsy.com/listing/4539529064/"
+
 # Compact kit map for funnel links
 # (slug -> emoji, short title, gumroad slug, ages, price, etsy listing url)
 # gumroad slug None = no direct Gumroad link known; funnel must override cta_href.
-# etsy url None = kit not (verifiably) listed on Etsy; CTAs fall back to the shop root.
+# etsy url None = kit not purchasable anywhere on Etsy; CTAs fall back to the shop root.
 KITS = {
  "dino-6-8": ("🦖", "Dino Escape", "pyqyvv", "6-8", "9",
    "https://www.etsy.com/listing/4539492669/dinosaur-escape-room-printable-game-ages"),
@@ -60,14 +65,15 @@ KITS = {
    "https://www.etsy.com/listing/4539508791/pirate-escape-room-kids-printable"),
  "unicorn-5-7": ("🦄", "Rainbow Kingdom Escape", "gwycbb", "5-7", "9",
    "https://www.etsy.com/listing/4539597713/unicorn-escape-room-kids-printable"),
- "superhero-6-9": ("🦸", "Superhero Academy Escape", "cgoaw", "6-9", "9", None),
- "princess-4-6": ("👑", "Royal Castle Escape", "zsfgkd", "4-6", "9", None),
+ "superhero-6-9": ("🦸", "Superhero Academy Escape", "cgoaw", "6-9", "9",
+   "https://www.etsy.com/listing/4543000378/"),
+ "princess-4-6": ("👑", "Royal Castle Escape", "zsfgkd", "4-6", "9", ETSY_BUNDLE),
  "mermaid-5-7": ("🧜‍♀️", "Mermaid Lagoon Escape", "tajaxj", "5-7", "9", None),
- "jungle-safari-6-8": ("🦁", "Jungle Safari Rescue", "ylftn", "6-8", "9", None),
- "ninja-7-9": ("🥷", "Ninja Dojo Escape", "btdxt", "7-9", "10", None),
- "halloween-6-9": ("🎃", "Monster Mansion Escape", "rkuod", "6-9", "9", None),
- "christmas-5-8": ("🎄", "Santa's Workshop Escape", "vyvab", "5-8", "9", None),
- "easter-4-7": ("🐰", "Easter Bunny's Egg Hunt Escape", "meheq", "4-7", "9", None),
+ "jungle-safari-6-8": ("🦁", "Jungle Safari Rescue", "ylftn", "6-8", "9", ETSY_BUNDLE),
+ "ninja-7-9": ("🥷", "Ninja Dojo Escape", "btdxt", "7-9", "10", ETSY_BUNDLE),
+ "halloween-6-9": ("🎃", "Monster Mansion Escape", "rkuod", "6-9", "9", ETSY_BUNDLE),
+ "christmas-5-8": ("🎄", "Santa's Workshop Escape", "vyvab", "5-8", "9", ETSY_BUNDLE),
+ "easter-4-7": ("🐰", "Easter Bunny's Egg Hunt Escape", "meheq", "4-7", "9", ETSY_BUNDLE),
 }
 
 DEFAULT_THEME = {
@@ -232,7 +238,10 @@ def funnel_block(art):
         cta_href = utm(cta_href, "guide", campaign)
         cta_label = over.get("cta_label", f"Get {title} — ${price} →")
         rel = ' rel="noopener"' if cta_href.startswith("http") else ""
-        etsy_btn = f'<a class="btn etsy" href="{etsy_url or ETSY}" rel="noopener">Shop on Etsy →</a>' if over.get("etsy_button", True) else ""
+        # Honest label: six kits have no individual Etsy listing but ship inside
+        # the 10-room bundle — say so instead of implying a $9 standalone listing.
+        etsy_label = "In the 10-room bundle on Etsy →" if etsy_url == ETSY_BUNDLE else "Shop on Etsy →"
+        etsy_btn = f'<a class="btn etsy" href="{etsy_url or ETSY}" rel="noopener">{etsy_label}</a>' if over.get("etsy_button", True) else ""
         price_extra = f'{esc(over["price_extra"])} · ' if over.get("price_extra") else ""
         return f"""<div class="funnel"><div class="e">{emoji}</div>
 <h3>The done-for-you version: {esc(h3_title)}</h3>
@@ -248,7 +257,7 @@ def funnel_block(art):
     return f"""<div class="funnel"><div class="e">🔐✉️</div>
 <h3>Want it done for you? Grab a themed kit</h3>
 <p>{linkify_store_mentions(esc(art["funnel_pitch"]), art)}</p>
-<div class="cta"><a class="btn gum" href="../index.html">See all 13 escape kits →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
+<div class="cta"><a class="btn gum" href="../index.html">See all 13 escape kits →</a><a class="btn etsy" href="{ETSY_BUNDLE}" rel="noopener">10-room bundle on Etsy — $29 →</a></div>
 <p class="price">13 themes · ages 4–9 · instant PDF · ~$9 each · one-click checkout on each kit page</p></div>"""
 
 
@@ -297,7 +306,7 @@ def free_upsell_block():
     return f"""<div class="funnel" style="border-color:var(--band)"><div class="e">🎁</div>
 <h3>Loved the free mini? Skip the prep next time</h3>
 <p>The full themed kits turn this into a bigger party in about 15 minutes of setup: six illustrated puzzles that chain into a clue trail, seven printable zone signs, a code-and-keypad finale, name certificates and a full host guide — one instant-download PDF, about $9. Pick the theme your child already loves.</p>
-<div class="cta"><a class="btn gum" href="../index.html">Browse the themed kits — from $9 →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div>
+<div class="cta"><a class="btn gum" href="../index.html">Browse the themed kits — from $9 →</a><a class="btn etsy" href="{ETSY_BUNDLE}" rel="noopener">10-room bundle on Etsy — $29 →</a></div>
 <p class="price">Pirate · dino · space · spy · unicorn · mermaid &amp; more · instant PDF</p></div>"""
 
 
@@ -558,7 +567,7 @@ def guides_index(articles):
 <div class="guidenav" style="margin-top:22px">{cards}</div></header>
 <div class="wrap"><section style="padding-top:26px"><h2>Ready-made escape room kits</h2>
 <p class="hook" style="margin:0 0 14px">Love the ideas but short on time? Every themed kit is an instant-download, print-at-home escape room — about 15 minutes to set up.</p>
-<div class="cta"><a class="btn gum" href="../index.html">See all 13 kits →</a><a class="btn etsy" href="{ETSY}" rel="noopener">Shop on Etsy →</a></div></section></div>
+<div class="cta"><a class="btn gum" href="../index.html">See all 13 kits →</a><a class="btn etsy" href="{ETSY_BUNDLE}" rel="noopener">10-room bundle on Etsy — $29 →</a></div></section></div>
 <footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="{ETSY}">Etsy</a> · <a href="{utm(GUM, "index", "guides-index")}">Gumroad</a></footer>
 </body></html>"""
 
