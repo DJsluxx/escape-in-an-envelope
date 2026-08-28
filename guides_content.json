@@ -110,6 +110,7 @@
    "funnel_pitch": "Loved running the free mini? The full Escape in an Envelope kits turn it into a proper party: six illustrated puzzles that chain into a clue trail, seven printable zone signs, a code-and-keypad finale, name certificates, and a host guide with the complete answer key — all in one print-at-home PDF, about $9, instant download. Every kit is age-banded and solvability-checked, in themes kids adore (pirate, dino, space, spy, unicorn, mermaid and more) at salama62.gumroad.com or our Etsy shop. About 15 minutes to set up, reusable, and the free plan above stays yours no matter what.",
    "nav_label": "🗝️ Free Printable Escape Room",
    "kit": null,
+   "diy_onramp": true,
    "funnel": {
     "purchase_free": true,
     "purchase_free_note": "Escape in an Envelope also makes 13 full themed escape rooms — pirate, dino, space, spy, unicorn, mermaid and more, for ages 4–9. Have a look around the kit index whenever you like."
@@ -892,6 +893,7 @@
    "funnel_pitch": "Everything above is genuinely all you need to run a free, home-made escape room — steal the plan and go. But if you'd rather skip the two or three hours of designing puzzles, checking they actually solve, and laying it all out, that's exactly why we make Escape in an Envelope kits. Each one is a themed, print-at-home pack: six illustrated puzzles that chain into a code, seven zone signs, a finale keypad card, printable certificates and a full host guide with the answer key. Every puzzle is tested to actually solve at its target age, so no child ends up stuck or in tears. Pick the theme and age band that matches the birthday — Dino (6–8), Space (5–6), Pirate (6–8), Spy (7–9) and more — print it tonight, and host it in about 15 minutes of setup for about the price of a couple of party bags. The free plan stands on its own; the kit just saves you the evening.",
    "nav_label": "🔐 Kids Escape Room (How-To)",
    "kit": null,
+   "diy_onramp": true,
    "og_image": "https://djsluxx.github.io/escape-in-an-envelope/pins/ultimate-guide-pin.png"
   },
   {
@@ -2580,7 +2582,7 @@
   },
   {
    "slug": "escape-room-for-5-year-olds",
-   "seo_title": "Escape Room for 5 Year Olds (Easy, No Reading)",
+   "seo_title": "Escape Room for 5 Year Olds Kit (Easy, No Reading)",
    "meta_description": "Escape room for 5 year olds you can run tonight: short, picture-based puzzles with no reading, a 25-minute plan, prep checklist, and everyone-wins games.",
    "keywords": [
     "escape room for 5 year olds",
@@ -2699,11 +2701,12 @@
    "funnel_pitch": "If a craft-it-yourself evening isn't happening this week, the Space Station Escape kit is the same idea, done for you. It's a $9 instant-download PDF built for ages 5–6: six illustrated, picture-led puzzles that form one code-cracking trail, plus door and zone signs, a final code card, winner certificates and a host guide with the full answer key. You print it at home, nothing ships, and it's reusable for the next party. The mission — get the space station's lights back on before the meteor shower — ties it all together, and it runs about 25–40 minutes for 3–8 kids. The free plan above stands completely on its own if you'd rather DIY.",
    "nav_label": "🚀 Escape Room, Age 5",
    "kit": "space-5-6",
+   "diy_onramp": true,
    "og_image": "https://djsluxx.github.io/escape-in-an-envelope/pins/space-5-6-pin.png"
   },
   {
    "slug": "escape-room-for-6-year-olds",
-   "seo_title": "Escape Room for 6 Year Olds (Runnable Tonight)",
+   "seo_title": "Escape Room for 6 Year Olds Kit (Runnable Tonight)",
    "meta_description": "Escape room for 6 year olds with beginning-reader puzzles: number locks, letter matching, mazes and a 35-minute plan to build tonight. Prep list included.",
    "keywords": [
     "escape room for 6 year olds",
@@ -2823,11 +2826,12 @@
    "funnel_pitch": "Short on an evening to build it? Dino Escape is the same six-year-old-ready mission, ready to print. It's a $9 instant-download PDF for ages 6–8: six illustrated puzzles that chain into one code-cracking trail, plus door and zone signs, a final code card, winner certificates and a host guide with the full answer key. Print at home, nothing ships, reuse it for the next party. The story — baby T-Rex Rexy is about to break out of the lab, so crack the cage code and stop the escape — carries the whole game, and it runs about 30–45 minutes for 3–8 kids. Every DIY idea above works on its own if you never buy a thing.",
    "nav_label": "🦖 Escape Room, Age 6",
    "kit": "dino-6-8",
+   "diy_onramp": true,
    "og_image": "https://djsluxx.github.io/escape-in-an-envelope/pins/dino-6-8-pin.png"
   },
   {
    "slug": "escape-room-for-7-year-olds",
-   "seo_title": "Escape Room for 7 Year Olds (Real Puzzles)",
+   "seo_title": "Escape Room for 7 Year Olds Kit (Real Puzzles)",
    "meta_description": "Escape room for 7 year olds with real puzzles: A1Z26 ciphers, invisible ink, logic-grid clues and a 40-minute plan. Build it tonight from household items.",
    "keywords": [
     "escape room for 7 year olds",
@@ -2947,11 +2951,12 @@
    "funnel_pitch": "Don't have a couple of hours to write ciphers and draw grids? Spy HQ Lockdown is the same seven-year-old level, ready to print. It's a $10 instant-download PDF for ages 7–9: six illustrated puzzles that chain into one code-cracking trail, plus door and zone signs, a final code card, winner certificates and a host guide with the full answer key. Print at home, nothing ships, reuse it. The mission — the thief Shadow has locked down HQ and hidden the Golden Chip, so recover it — pulls the whole game together, and it runs about 35–50 minutes for 3–8 kids. Every DIY puzzle above still stands on its own if you never buy the kit.",
    "nav_label": "🕵️ Escape Room, Age 7",
    "kit": "spy-7-9",
+   "diy_onramp": true,
    "og_image": "https://djsluxx.github.io/escape-in-an-envelope/pins/spy-7-9-pin.png"
   },
   {
    "slug": "escape-room-for-8-year-olds",
-   "seo_title": "Escape Room for 8 Year Olds (Real Challenge)",
+   "seo_title": "Escape Room for 8 Year Olds Kit (Real Challenge)",
    "meta_description": "Escape room for 8 year olds who want a real challenge: Caesar ciphers, logic grids, red herrings, a beat-the-clock timer and a 45-minute plan.",
    "keywords": [
     "escape room for 8 year olds",
@@ -3071,11 +3076,12 @@
    "funnel_pitch": "Not up for wiring together linked locks and a tested answer key tonight? Ninja Dojo Escape hands you the whole multi-step challenge, ready to print. It's a $10 instant-download PDF for ages 7–9: six illustrated puzzles that chain into one code-cracking trail, plus door and zone signs, a final code card, winner certificates and a host guide with the full answer key. Print at home, nothing ships, reuse it for the next party. The mission — a masked thief stole the sacred scroll from the dojo, so recover it — drives the whole game, and it runs about 30–45 minutes for 3–8 kids. Everything you'd DIY above still works on its own if you never buy it.",
    "nav_label": "🥷 Escape Room, Age 8",
    "kit": "ninja-7-9",
+   "diy_onramp": true,
    "og_image": "https://djsluxx.github.io/escape-in-an-envelope/pins/ninja-7-9-pin.png"
   },
   {
    "slug": "escape-room-for-9-year-olds",
-   "seo_title": "Escape Room for 9 Year Olds (Puzzles That Stump Them)",
+   "seo_title": "Escape Room for 9 Year Olds Kit (Stump Them)",
    "meta_description": "An escape room for 9 year olds that challenges fluent readers: keyword ciphers, a coordinate grid, a two-lock chain and a 55-minute spy mission plan.",
    "keywords": [
     "escape room for 9 year olds",
@@ -3196,11 +3202,12 @@
    "funnel_pitch": "Not up for wiring together a keyword cipher, two arguing red herrings and a cross-check code tonight? Spy HQ Lockdown hands you the whole multi-step mission, ready to print. It's a $10 instant-download PDF for ages 7-9 (and a strong 10): seven illustrated puzzles that chain into one final code, plus door and zone signs, agent badges, a final code card and a host guide with the complete answer key. Print at home, nothing ships, reuse it for the next party. The mission - a double agent hid the intel behind a two-lock vault, so crack the chain before the drop window closes - drives the whole game and runs about 45-55 minutes for 3-8 agents. Everything you'd DIY above still works on its own if you never buy it.",
    "nav_label": "🕵️ Escape Room, Age 9",
    "kit": "spy-7-9",
+   "diy_onramp": true,
    "og_image": "https://djsluxx.github.io/escape-in-an-envelope/pins/spy-7-9-pin.png"
   },
   {
    "slug": "escape-room-for-10-year-olds",
-   "seo_title": "Escape Room for 10 Year Olds (A Whodunit They Can't Guess)",
+   "seo_title": "Escape Room for 10 Year Olds Kit (Whodunit)",
    "meta_description": "An escape room for 10 year olds that respects sharp pre-teens: a full whodunit with suspects and alibis, a book cipher and a 60-minute heist plan.",
    "keywords": [
     "escape room for 10 year olds",
@@ -3323,6 +3330,7 @@
    "funnel_pitch": "A real whodunit is the hardest kind to build - internally consistent alibis, red herrings that fail for a reason, an un-guessable but fair final code - and that's several evenings of writing and testing. Spy HQ Lockdown ships a case that already holds together, ready to print. It's a $10 instant-download PDF that plays hard enough for tens: chained puzzles that build to one final code, plus door and zone signs, agent badges, a final code card and a host guide with the complete answer key. Print at home, nothing ships, reuse it for the next party. Everything you'd DIY above still works on its own if you never buy it - the kit just saves you the late nights of debugging a mystery.",
    "nav_label": "🧠 Escape Room, Age 10",
    "kit": "spy-7-9",
+   "diy_onramp": true,
    "og_image": "https://djsluxx.github.io/escape-in-an-envelope/pins/spy-7-9-pin.png"
   },
   {
@@ -3592,6 +3600,7 @@
    "funnel_pitch": "Out of prep time? A printable escape room gives you the whole clue chain, signs, certificates and answer key ready to go — the Escape in an Envelope kits are instant-download PDFs for ages 4–9, around $9 each, printed at home with nothing to ship. Each has six illustrated puzzles that form one code-cracking mission across thirteen themes, and you can slot your own review questions alongside the ready-made puzzles at each station. It's the fastest route to a polished, whole-class escape room when a from-scratch build won't fit your week. Every no-lock, station-rotation idea above works completely on its own if you'd rather build yours by hand.",
    "nav_label": "🏫 Classroom Escape Rooms",
    "kit": null,
+   "diy_onramp": true,
    "og_image": "https://djsluxx.github.io/escape-in-an-envelope/pins/free-printable-pin.png"
   },
   {

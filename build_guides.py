@@ -29,6 +29,7 @@ ETSY = "https://escapeinanenvelop.etsy.com"
 GUM = "https://salama62.gumroad.com"
 FREE_PDF = f"{BASE}/free/mini-escape-room.pdf"
 FREE_SLUG = "free-printable-escape-room-for-kids"
+DIY_GENERATOR_HREF = "../free/escape-room-generator.html"
 
 def esc(s): return html.escape(str(s))
 
@@ -41,6 +42,16 @@ def utm(url, medium, campaign):
     guide|kit|index; campaign = page slug). Non-Gumroad URLs pass through."""
     if not url or not url.startswith(GUM):
         return url
+    sep = "&" if "?" in url else "?"
+    return f"{url}{sep}utm_source={UTM_SOURCE}&utm_medium={medium}&utm_campaign={campaign}"
+
+
+def internal_utm(url, medium, campaign):
+    """Tag any on-site link that funnels to another on-site page we want to
+    attribute (e.g. the free DIY generator) with the same UTM convention as
+    utm() — a separate function, not an extension of utm()'s contract, so
+    utm()'s existing Gumroad-only gate stays byte-identical for every caller
+    that already depends on non-Gumroad URLs passing through untouched."""
     sep = "&" if "?" in url else "?"
     return f"{url}{sep}utm_source={UTM_SOURCE}&utm_medium={medium}&utm_campaign={campaign}"
 
@@ -143,6 +154,33 @@ def _purchase_free(art):
     stay a purchase-free journey end to end (e.g. a Pinterest pin destination).
     See WARDEN cycle-009 ruling, vibe-org/cycles/009-warden-destination.md."""
     return bool((art.get("funnel") or {}).get("purchase_free"))
+
+
+def diy_generator_block(art):
+    """On-ramp to the free DIY escape-room generator (free/escape-room-generator.html),
+    for guides whose reader arrived with build-it-myself intent — every stranger
+    reaching this site searches "how to make"/"diy" an escape room, never "buy"
+    (cycle 031, Google Search Console). Gated per-guide by the ``diy_onramp: true``
+    flag in guides_content.json rather than a hand-coded slug list here, so the
+    scoping decision stays visible in the data.
+
+    Framed honestly as a genuine free option alongside the paid kit — the
+    generator is never presented as the product. On a ``purchase_free`` guide
+    (see _purchase_free() docstring) this renders a stripped variant with no
+    price, no store link and no buy verb, so the free-tool mention can never
+    reopen WARDEN's cycle-009 purchase-free veto on that one journey."""
+    if not art.get("diy_onramp"):
+        return ""
+    href = internal_utm(DIY_GENERATOR_HREF, "guide", f"{art['slug']}-diy")
+    if _purchase_free(art):
+        return (f'<p class="price" style="text-align:center;margin:20px 0">'
+                f'Want to build your own first? Try the '
+                f'<a href="{href}" rel="noopener">free escape-room generator</a> '
+                f'— type a name, pick a theme, print in about 30 seconds.</p>')
+    return f"""<div class="funnel" style="border-color:var(--band)"><div class="e">🛠️</div>
+<h3>Build your own free — or skip to the ready-made kit</h3>
+<p>Want to make it yourself? The <a href="{href}" rel="noopener">free escape-room generator</a> builds a custom 3-clue printable with a real padlock code in about 30 seconds — no sign-up, no email. Short on time instead? The themed Kit below does the drawing for you.</p>
+<div class="cta"><a class="btn free" href="{href}" rel="noopener">🛠️ Try the free generator →</a></div></div>"""
 
 
 def free_pdf_page_count():
@@ -420,6 +458,9 @@ def guide_page(art, articles, pz=None):
     if is_free and pz:
         body.append(render_free_puzzle_html(pz))
     body.append("</div>")
+    diy_html = diy_generator_block(art)
+    if diy_html:
+        body.append(diy_html)
     body.append(funnel_block(art))
     body.append(render_faq(art["faq"]))
     body.append(f'<section style="padding-top:24px"><h2>More free party guides</h2><div class="more">{other_guides}</div></section>')
