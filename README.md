@@ -19,7 +19,7 @@ certificate. No email, no sign-up, no purchase.
 
 It takes kids ages 4–9 about 10–20 minutes. Print one page, hide three clues, done.
 
-## 🧩 Themed kits (age-banded, instant download, $9–$10)
+## 🧩 Themed kits (age-banded, instant download, $19)
 
 Each kit is tuned to a theme **and** a child's age band, so the puzzle difficulty fits the
 player. Instant PDF download.
