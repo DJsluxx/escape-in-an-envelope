@@ -26,6 +26,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 BASE = "https://djsluxx.github.io/escape-in-an-envelope"
 ETSY = "https://escapeinanenvelop.etsy.com"
+# Sibling property, same publisher. Parents who run escape rooms for a kids' party are
+# the same adults who want one for themselves after bedtime — an honest adjacency, and
+# these guides are the only pages on the host Google has actually indexed. Deliberately
+# NOT added to purchase_free guides, which carry no commercial navigation by design.
+DATE_NIGHT = "https://djsluxx.github.io/escape-date-night/"
 GUM = "https://salama62.gumroad.com"
 FREE_PDF = f"{BASE}/free/mini-escape-room.pdf"
 FREE_SLUG = "free-printable-escape-room-for-kids"
@@ -507,7 +512,7 @@ def guide_page(art, articles, pz=None):
     footer_html = (
         'Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="index.html">Party guides</a>'
         if purchase_free else
-        f'Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="index.html">Party guides</a> · <a href="../index.html">All kits</a> · <a href="{ETSY}">Etsy</a>'
+        f'Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="index.html">Party guides</a> · <a href="../index.html">All kits</a> · <a href="{ETSY}">Etsy</a> · <a href="{DATE_NIGHT}">Escape room date night for grown-ups</a>'
     )
     return f"""<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -609,7 +614,7 @@ def guides_index(articles):
 <div class="wrap"><section style="padding-top:26px"><h2>Ready-made escape room kits</h2>
 <p class="hook" style="margin:0 0 14px">Love the ideas but short on time? Every themed kit is an instant-download, print-at-home escape room — about 15 minutes to set up.</p>
 <div class="cta"><a class="btn gum" href="../index.html">See all 13 kits →</a><a class="btn etsy" href="{ETSY_BUNDLE}" rel="noopener">10-room bundle on Etsy — $29 →</a></div></section></div>
-<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="{ETSY}">Etsy</a> · <a href="{utm(GUM, "index", "guides-index")}">Gumroad</a></footer>
+<footer>Escape in an Envelope · print-at-home escape rooms for kids ages 4–9 · <a href="{ETSY}">Etsy</a> · <a href="{utm(GUM, "index", "guides-index")}">Gumroad</a> · <a href="{DATE_NIGHT}">Escape room date night for grown-ups</a></footer>
 </body></html>"""
 
 
