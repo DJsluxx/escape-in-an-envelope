@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 """Submit every sitemap URL to IndexNow (Bing / Yandex / Seznam / AI answer engines).
 
-WHY: djsluxx.github.io is a GitHub Pages *project* site. Crawlers only read robots.txt
-from the domain root (https://djsluxx.github.io/robots.txt), which 404s because no
-user-page repo exists — so the project's own `Sitemap:` directive is never auto-discovered.
-GSC covers Google, but the strategy's traffic backbone is "autonomous search + AI answer
-engines". IndexNow pushes URLs straight to Bing (which feeds Copilot / ChatGPT search),
-Yandex and Seznam — no login, no token, instant. This is the login-free companion to the
-GSC "request indexing" step.
+WHY: GSC covers Google, but the strategy's traffic backbone is "autonomous search +
+AI answer engines". IndexNow pushes URLs straight to Bing (which feeds Copilot / ChatGPT
+search), Yandex and Seznam - no login, no token, instant. This is the login-free companion
+to the GSC "request indexing" step.
+
+CORRECTION (2026-08-30): an earlier version of this docstring claimed the host root
+robots.txt (https://djsluxx.github.io/robots.txt) 404s. That is no longer true (measured
+HTTP 200) - the host-root repo djsluxx.github.io now serves a real robots.txt with a
+sitemap index covering all 5 estate properties, plus its own estate-wide IndexNow
+submitter at Desktop/djsluxx.github.io/submit_indexnow.py (host-root key, rate-limited,
+logs to indexnow_log.json). That script is the authoritative submitter for the whole
+estate going forward; this file stays only as the escape-in-an-envelope-scoped path that
+build_guides.py --ping already depends on.
 
 The key is already hosted at the site root of the project path and must stay reachable:
     https://djsluxx.github.io/escape-in-an-envelope/586b557f6de25d530c55390b156f265f.txt
