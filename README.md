@@ -19,6 +19,18 @@ certificate. No email, no sign-up, no purchase.
 
 It takes kids ages 4–9 about 10–20 minutes. Print one page, hide three clues, done.
 
+## 🏫 A free whole-class escape room for teachers
+
+Teachers get their own free printable, separate from the kids' party one: **The Lost Library Code**
+is a 12-page print-and-run classroom escape room for **grades 3–6** — five stations, 25–30
+students, one 45-minute period. It includes a 45-minute timeline, a five-minute setup, a read-aloud
+story, five station signs, a Code Tracker per group, a teacher answer key and a class certificate.
+No padlocks, no app, no email, no sign-up: the "lock" is teacher verification, so a correct answer is
+what earns a group one digit of the code. It resets for the next period in about five minutes.
+
+- **Landing page:** https://djsluxx.github.io/escape-in-an-envelope/free/classroom-escape-room.html
+- **Free PDF download:** https://djsluxx.github.io/escape-in-an-envelope/free/classroom-escape-room.pdf
+
 ## 🧩 Themed kits (age-banded, instant download, $19)
 
 Each kit is tuned to a theme **and** a child's age band, so the puzzle difficulty fits the

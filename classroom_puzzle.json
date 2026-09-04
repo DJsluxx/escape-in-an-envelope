@@ -1,0 +1,70 @@
+{
+  "title": "The Lost Library Code — A Whole-Class Escape Room (Grades 3–6)",
+  "subtitle": "5 stations · 25–30 students · one 45-minute period · no locks, no apps, no batteries",
+  "premise": "The school library's rarest book has been sealed inside the Archive Cabinet, and the only person who knew the 5-digit code has left for the day. Five stations around the room each hold one digit. Crack all five, line them up in station order, and the class opens the Archive together before the period ends.",
+  "story_intro": "Read this aloud once everyone is seated, before you release them to stations:\n\n\"Listen up, Archivists. We have a problem. The oldest book in this school is locked inside the Archive Cabinet, and the five-digit code that opens it was split into five pieces and hidden at five stations around this room. Each station holds exactly ONE digit. No single group can open the Archive alone — you will each solve some of it, and then we put the code together as one class. Your group gets about eight minutes per station, then you rotate. Write every digit you earn on your Code Tracker, because at the end I am going to ask this class for all five numbers in order, and if even one is wrong, the Archive stays shut. Archivists — to your stations. Your time starts now.\"",
+  "teacher_setup": "Five-minute setup. Plain paper, no laminating, no locks, nothing to buy.\n\n<b>1. Print.</b> One copy of the five Station Signs (one per station), one Code Tracker per group of 5–6 students, and one Answer Key page — cut the key into five strips and keep all five with you. The strips are how you verify, and they never leave your hand.\n\n<b>2. Arrange.</b> Five stations around the room. With 25–30 students that is five groups of 5–6, one group per station, all five stations running at once.\n\n<b>3. Run.</b> Groups rotate on your signal roughly every 8 minutes. A group that finishes early gets the Bonus line at the bottom of its station sign.\n\n<b>4. Verify.</b> When a group thinks it has a station's answer, they show you. Correct, and you read them that station's digit off your Answer Key strip and they write it on their Code Tracker. Wrong, and you say only \"not yet\" and let them keep working. That is the whole lock — a correct answer is the only thing that removes the barrier, which is exactly why this needs no padlock, no envelope and no app.\n\n<b>5. Finish.</b> With five minutes left, call the class together and take the five digits in station order. Read the full code back. If it is right, open the Archive — any box, drawer or large envelope you sealed before the lesson with the reward inside.",
+  "timeline": [
+    ["0–7 min", "Hook and rules. Read the story aloud, hand out Code Trackers, send groups to their starting stations."],
+    ["7–37 min", "Five rotations of roughly 6–8 minutes. Signal each rotation. You circulate and verify answers."],
+    ["37–42 min", "Class assembly. Collect all five digits in station order, read the full code back, open the Archive."],
+    ["42–45 min", "Debrief. Which station was hardest? What strategy worked? Hand out certificates if you are using them."]
+  ],
+  "stations": [
+    {
+      "n": 1,
+      "name": "The Arithmetic Ladder",
+      "subject": "Math — multi-step operations",
+      "task": "Four rungs, and every rung uses the answer from the rung above it. Climb them in order.<br/><br/><b>Rung 1:</b> 6 × 7<br/><b>Rung 2:</b> subtract 12 from your Rung 1 answer<br/><b>Rung 3:</b> divide your Rung 2 answer by 5<br/><b>Rung 4:</b> add 17 to your Rung 3 answer<br/><br/>Show your teacher your <b>Rung 4</b> answer. If any rung is wrong, every rung below it will be wrong too — so check as you climb.",
+      "answer": "42 → 30 → 6 → 23. The number they show you is 23.",
+      "yields_digit": "3",
+      "bonus": "Build a five-rung ladder of your own that ends on 23, and leave it for the next group to climb.",
+      "swap": "Using your own content? Replace the four rungs with four questions from this week's review. The digit lives on your Answer Key strip, not in the maths, so it never changes."
+    },
+    {
+      "n": 2,
+      "name": "The Scrambled Spines",
+      "subject": "Literacy — vocabulary and letter patterns",
+      "task": "Four book spines were mislabelled and their letters jumbled. Unscramble all four:<br/><br/><b>RABIRLY · TEQIU · HEFLS · RCADHIVE</b><br/><br/>One of those four words names the thing this whole mission is trying to open. Show your teacher <b>that word</b>, unscrambled and spelled correctly.",
+      "answer": "LIBRARY, QUIET, SHELF, ARCHIVE. The word they must show you is ARCHIVE.",
+      "yields_digit": "7",
+      "bonus": "Scramble two more library words and leave them on the table for the next group.",
+      "swap": "Using your own content? Swap in four vocabulary words from your current unit and point them at one of the four. The digit does not change."
+    },
+    {
+      "n": 3,
+      "name": "The Shelf Map",
+      "subject": "Measurement, pattern and diagram reading",
+      "task": "The Archive room has six shelves in a row. Shelf 1 is <b>2 metres</b> long. Every shelf after it is <b>1 metre longer</b> than the one before it.<br/><br/><b>Question A:</b> how long is Shelf 6?<br/><b>Question B:</b> what is the total length of all six shelves added together?<br/><br/>Show your teacher <b>both</b> numbers. One without the other does not count.",
+      "answer": "Shelf 6 is 7 m. Total is 2+3+4+5+6+7 = 27 m. They must give you both: 7 and 27.",
+      "yields_digit": "1",
+      "bonus": "If the pattern kept going, which shelf would be the first one longer than 12 metres?",
+      "swap": "Using your own content? Change the starting length and the step size. The digit does not change."
+    },
+    {
+      "n": 4,
+      "name": "The Out-of-Order Timeline",
+      "subject": "Logic, sequencing and reading for detail",
+      "task": "Five events from the day the book went missing are printed out of order:<br/><br/><b>A</b> — The cabinet was locked.<br/><b>B</b> — The librarian left for the day.<br/><b>C</b> — The book was returned to the desk.<br/><b>D</b> — The code was split into five pieces.<br/><b>E</b> — The book was placed in the cabinet.<br/><br/><b>Clues:</b> the book was returned before anything else happened · the code was split immediately after the cabinet was locked · the librarian left last.<br/><br/>Show your teacher the five letters in the correct order.",
+      "answer": "C, E, A, D, B.",
+      "yields_digit": "9",
+      "bonus": "Write a sixth event, then say exactly where in the sequence it belongs and which clue proves it.",
+      "swap": "Using your own content? Swap in five events from a story or a history unit. The digit does not change."
+    },
+    {
+      "n": 5,
+      "name": "The Number Cipher",
+      "subject": "Pattern recognition and code-breaking",
+      "task": "In this cipher <b>A = 1, B = 2, C = 3</b> and so on, all the way to <b>Z = 26</b>.<br/><br/>Decode the first word: <b>2 – 15 – 15 – 11</b><br/>Decode the second word: <b>6 – 15 – 21 – 14 – 4</b><br/><br/>Show your teacher <b>both</b> decoded words. Together they say what this mission has been about all along.",
+      "answer": "BOOK and FOUND.",
+      "yields_digit": "4",
+      "bonus": "Write your own three-letter word in the cipher and see whether the next group can crack it.",
+      "swap": "Using your own content? Encode two words from your current unit instead. The digit does not change."
+    }
+  ],
+  "final_code": "37194",
+  "final_instruction": "With about five minutes left, stop the rotations and bring the whole class together. Go station by station in order — 1, then 2, 3, 4, 5 — and ask which group holds that station's digit. Write them on the board as they come in: <b>3 – 7 – 1 – 9 – 4</b>. Read the full code back to the room: THREE – SEVEN – ONE – NINE – FOUR. Then open the Archive — any box, drawer, cupboard or large envelope you sealed before the lesson with the reward inside.<br/><br/>If a digit is wrong, the Archive simply stays shut, and you send that station's group back for sixty seconds to re-check. That is a low-stress retry that keeps every student in the game right up to the bell.",
+  "reset_note": "Nothing here is consumed except the Code Trackers. To reset for the next period: collect the five Station Signs and put them back on the tables, keep your five Answer Key strips (they never left your hand), re-seal the Archive, and hand out fresh Code Trackers. That is the entire reset, and it is why the same five signs will run all day — because the locks are your verification rather than physical hardware, there is nothing to re-lock, re-hide or re-buy.",
+  "differentiation": "<b>Support:</b> pair strong readers with developing readers; allow calculators at Station 1; give the Station 5 group a printed A–26 alphabet strip.<br/><b>Stretch:</b> every station has a Bonus line for groups that finish early. A group that clears its bonus becomes an Archive Deputy and may check another group's working — without giving the answer away.<br/><b>Short on time:</b> in a 40-minute period, run four stations and give Station 3's digit away as a freebie during the story intro.",
+  "certificate_line": "For cracking the Lost Library Code, for working as one class when no single group could open the Archive alone, and for returning the rarest book in the school to its shelf."
+}

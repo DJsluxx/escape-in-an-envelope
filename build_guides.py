@@ -35,6 +35,8 @@ GUM = "https://salama62.gumroad.com"
 FREE_PDF = f"{BASE}/free/mini-escape-room.pdf"
 FREE_SLUG = "free-printable-escape-room-for-kids"
 DIY_GENERATOR_HREF = "../free/escape-room-generator.html"
+CLASSROOM_HREF = "../free/classroom-escape-room.html"
+CLASSROOM_PDF_REL = "free/classroom-escape-room.pdf"
 
 def esc(s): return html.escape(str(s))
 
@@ -188,6 +190,44 @@ def diy_generator_block(art):
 <div class="cta"><a class="btn free" href="{href}" rel="noopener">🛠️ Try the free generator →</a></div></div>"""
 
 
+def pdf_page_count(rel_path):
+    """Read a PDF's true page count out of its own /Pages object, so any on-page
+    claim about page count is derived from the actual artifact and can never
+    silently drift out of sync with it (cycle 009 caught the page copy claiming
+    "one page" for a file that is really four). /Count and /Type can appear in
+    either order inside the dict, so this scans a byte window around the
+    /Type /Pages marker rather than assuming order."""
+    data = (ROOT / rel_path).read_bytes()
+    type_pages = re.search(rb"/Type\s*/Pages", data)
+    if not type_pages:
+        raise SystemExit(f"ABORT: could not find /Type /Pages in {rel_path}")
+    window = data[max(0, type_pages.start() - 200):type_pages.end() + 50]
+    count = re.search(rb"/Count\s+(\d+)", window)
+    if not count:
+        raise SystemExit(f"ABORT: could not read /Count near /Type /Pages in {rel_path}")
+    return int(count.group(1))
+
+
+def classroom_block(art):
+    """On-ramp from the classroom guide to the free whole-class printable
+    (free/classroom-escape-room.html).
+
+    Cycle 043: teachers are the one audience this company holds hard purchase
+    evidence for, and cycle 042 started sending them here from Pinterest — onto a
+    page to READ with nothing to take. This block is the take-away. Gated by the
+    ``classroom_onramp: true`` flag in guides_content.json so the scoping stays
+    visible in the data, and the page count is read from the shipped PDF so the
+    claim cannot drift away from the file."""
+    if not art.get("classroom_onramp"):
+        return ""
+    href = internal_utm(CLASSROOM_HREF, "guide", f"{art['slug']}-classroom")
+    pages = pdf_page_count(CLASSROOM_PDF_REL)
+    return f"""<div class="funnel" style="border-color:var(--accent)"><div class="e">🏫</div>
+<h3>Want this already built? Take the free {pages}-page classroom pack</h3>
+<p>Everything on this page, done for you: <strong>The Lost Library Code</strong> is a free printable whole-class escape room for grades 3–6 — five station signs, a Code Tracker for every group, a teacher answer key and certificates, sized for 25–30 students in one 45-minute period. No locks, no apps, no email address.</p>
+<div class="cta"><a class="btn free" href="{href}" rel="noopener">🏫 Get the free classroom pack →</a></div></div>"""
+
+
 def free_pdf_page_count():
     """Read the true page count straight out of free/mini-escape-room.pdf's own
     /Pages object, so any on-page claim about page count is derived from the
@@ -195,15 +235,7 @@ def free_pdf_page_count():
     caught the page copy claiming "one page" for a file that is really four).
     /Count and /Type can appear in either order inside the dict, so this scans
     a byte window around the /Type /Pages marker rather than assuming order."""
-    data = (ROOT / "free" / "mini-escape-room.pdf").read_bytes()
-    type_pages = re.search(rb"/Type\s*/Pages", data)
-    if not type_pages:
-        raise SystemExit("ABORT: could not find /Type /Pages in free/mini-escape-room.pdf")
-    window = data[max(0, type_pages.start() - 200):type_pages.end() + 50]
-    count = re.search(rb"/Count\s+(\d+)", window)
-    if not count:
-        raise SystemExit("ABORT: could not read /Count near /Type /Pages in free/mini-escape-room.pdf")
-    return int(count.group(1))
+    return pdf_page_count("free/mini-escape-room.pdf")
 
 
 def linkify_store_mentions(escaped_text, art, medium="guide"):
@@ -463,6 +495,9 @@ def guide_page(art, articles, pz=None):
     if is_free and pz:
         body.append(render_free_puzzle_html(pz))
     body.append("</div>")
+    classroom_html = classroom_block(art)
+    if classroom_html:
+        body.append(classroom_html)
     diy_html = diy_generator_block(art)
     if diy_html:
         body.append(diy_html)
